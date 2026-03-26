@@ -1,10 +1,23 @@
-import { Toaster, toast } from "sonner";
-function App() {
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import MasterLayout from "./theme/MasterLayout";
+import HomePage from "./pages/HomePage";
 
+function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <MasterLayout />,
+      children: [
+        {
+          index: true,
+          element: <HomePage />,
+        },
+      ],
+    },
+  ]);
   return (
     <div>
-      <Toaster />
-      <button onClick={() => toast("My first toast")}>Give me a toast</button>
+        <RouterProvider router={router} />
     </div>
   );
 }

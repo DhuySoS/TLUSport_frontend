@@ -5,7 +5,7 @@ import { Outlet } from 'react-router-dom'
 
 const MasterLayout = () => {
   return (
-    <div className='w-full min-h-screen'>
+    <div className='w-full min-h-screen '>
       <Header/>
       <Outlet/>
       <Footer/>

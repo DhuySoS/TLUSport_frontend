@@ -1,4 +1,4 @@
-import CategoryCard from '@/components/Card/CategoryCard'
+import CategoryCard from '@/components/card/CategoryCard'
 import React from 'react'
 import {
   Carousel,

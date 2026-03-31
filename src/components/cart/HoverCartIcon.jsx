@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Link } from "react-router-dom";
-import CartItemCard from "../Card/CartItemCard";
+import CartItemCard from "../card/CartItemCard";
 import { ScrollArea } from "../ui/scroll-area";
 
 const HoverCartIcon = ({ isHovered }) => {

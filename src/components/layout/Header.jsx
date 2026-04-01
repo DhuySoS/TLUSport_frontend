@@ -8,12 +8,14 @@ import {
 } from "../ui/dropdown-menu";
 import { Link } from "react-router-dom";
 import HoverCartIcon from "../cart/HoverCartIcon";
+import LoginModal from "../auth/LoginModal";
 
 const Header = () => {
   const [language, setLanguage] = useState("VN");
   const [showTopBar, setShowTopBar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
+  const [isOpenLogin, setIsOpenLogin] = useState(false);
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -159,7 +161,7 @@ const Header = () => {
                 </svg>
               </button>
             </div>
-            <div className="text-2xl cursor-pointer">
+            <div className="text-2xl cursor-pointer" onClick={() => { setIsOpenLogin(true); setShowTopBar(false); }}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="0.84em"
@@ -172,6 +174,8 @@ const Header = () => {
                 />
               </svg>
             </div>
+            {/* Mở modal đăng nhập */}
+            {isOpenLogin && <LoginModal isOpen={isOpenLogin} onClose={() => setIsOpenLogin(false)} />}
             {/* carticon */}
             <div
               className="text-2xl cursor-pointer relative "

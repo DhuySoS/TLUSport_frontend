@@ -43,7 +43,7 @@ const LoginModal = ({ isOpen, onClose }) => {
             className="object-cover w-full h-full"
           />
         </div>
-        <p className="text-gray-900 font-bold text-sm">
+        <p className="text-gray-900 font-bold text-[12px]">
           Đăng nhập hoặc đăng ký (miễn phí)
         </p>
         <div className="flex items-center gap-3">
@@ -97,14 +97,38 @@ const LoginModal = ({ isOpen, onClose }) => {
             </svg>
           </button>
         </div>
-        <div className="relative w-full h-px bg-gray-300 ">
-          <p className="text-[10px] font-semibold px-1 absolute top-1/2 left-1/4 transform -translate-x-1/4 -translate-y-1/2 inline-block bg-white">Hoặc</p>
+        <div className="relative w-full h-px bg-gray-300 mb-4">
+          <p className="text-[10px] font-semibold px-1 absolute top-1/2 left-1/4 transform -translate-x-1/4 -translate-y-1/2 inline-block bg-white">
+            Hoặc
+          </p>
         </div>
-        {activeTab === "login" && (<LoginForm />)}
-        {activeTab === "register" && (<RegisterForm />)}
-        <div className="flex justify-between items-center">
-          <button type="button" onClick={() => handleChangeTab("register")}>Đăng ký tài khoản mới</button>
+        {activeTab === "login" && <LoginForm />}
+        {activeTab === "register" && <RegisterForm />}
+        <div className="flex justify-between items-center text-[12px] text-blue-800 font-bold">
+          {activeTab === "login" ? (
+            <button
+              type="button"
+              className="cursor-pointer hover-underline-animation after:bg-blue-800"
+              onClick={() => handleChangeTab("register")}
+            >
+              Đăng ký tài khoản mới
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="cursor-pointer hover-underline-animation after:bg-blue-800"
+              onClick={() => handleChangeTab("login")}
+            >
+              Đăng nhập
+            </button>
+          )}
 
+          <button
+            type="button"
+            className="cursor-pointer hover-underline-animation after:bg-blue-800"
+          >
+            Quên mật khẩu
+          </button>
         </div>
         <div
           className="absolute top-0 right-0 translate-x-1/2 -translate-y-1/2 text-white bg-black cursor-pointer ring-1  ring-offset-2 ring-black rounded-full hover:bg-gray-900 hover:scale-105  transition-colors duration-300 p-1 "

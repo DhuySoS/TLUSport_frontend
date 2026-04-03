@@ -16,7 +16,7 @@ const HoverCartIcon = ({ isHovered }) => {
             <p className="text-neutral-400">
               Tạm tính: <span className="text-black">0₫</span> (0 sản phẩm)
             </p>
-            <Link className="text-blue-500 hover:underline">Xem tất cả</Link>
+            <Link to={"/cart"} className="text-blue-500 hover:underline">Xem tất cả</Link>
           </div>
           <ScrollArea className="h-100 pr-4">
             <div className="flex flex-col gap-4">

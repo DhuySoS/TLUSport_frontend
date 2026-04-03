@@ -1,5 +1,5 @@
 import React from "react";
-import { formatCurrency } from "@/lib/formatVND";
+import { formatCurrency } from "@/lib/formatCurrency";
 
 const ListProItemCard = () => {
   return (

@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import MasterLayout from "./theme/MasterLayout";
 import HomePage from "./pages/HomePage";
+import CartLayout from "./theme/CartLayout";
+import CartPage from "./pages/CartPage";
 
 function App() {
   const router = createBrowserRouter([
@@ -14,6 +16,16 @@ function App() {
         },
       ],
     },
+    {
+      path: "/cart",
+      element: <CartLayout />,
+      children: [
+        {
+          index: true,
+          element: <CartPage />,
+        },
+      ],
+    }
   ]);
   return (
     <div>

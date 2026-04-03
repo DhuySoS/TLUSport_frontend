@@ -6,7 +6,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import HoverCartIcon from "../cart/HoverCartIcon";
 import LoginModal from "../auth/LoginModal";
 
@@ -16,6 +16,7 @@ const Header = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [isOpenLogin, setIsOpenLogin] = useState(false);
+  const location = useLocation();
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -66,25 +67,69 @@ const Header = () => {
             </li>
             <div>
               <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="bg-transparent text-white border-none shadow-none hover:bg-transparent focus:ring-0 data-[state=open]:bg-transparent cursor-pointer"
-                  >
+                <DropdownMenuTrigger>
+                  <span className="flex gap-1 px-2.5 items-center bg-transparent text-white border-none shadow-none hover:bg-transparent focus:ring-0 data-[state=open]:bg-transparent cursor-pointer">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="1em"
                       height="1em"
                       viewBox="0 0 64 64"
                     >
-                      <circle cx="32" cy="32" r="30" fill="#f42f4c" />
-                      <path
-                        fill="#ffe62e"
-                        d="m32 39l9.9 7l-3.7-11.4l9.8-7.4H35.8L32 16l-3.7 11.2H16l9.8 7.4L22.1 46z"
-                      />
+                      {language === "VN" ? (
+                        <>
+                          <circle cx="32" cy="32" r="30" fill="#f42f4c" />
+                          <path
+                            fill="#ffe62e"
+                            d="m32 39l9.9 7l-3.7-11.4l9.8-7.4H35.8L32 16l-3.7 11.2H16l9.8 7.4L22.1 46z"
+                          />
+                        </>
+                      ) : (
+                        <>
+                          <path
+                            fill="#ed4c5c"
+                            d="M56 14H32v6h27.5c-.9-2.1-2.1-4.2-3.5-6"
+                          />
+                          <path
+                            fill="#f9f9f9"
+                            d="M61.4 38q.6-2.85.6-6H2q0 3.15.6 6z"
+                          />
+                          <path
+                            fill="#ed4c5c"
+                            d="M32 2v6h18c-5-3.8-11.2-6-18-6"
+                          />
+                          <path
+                            fill="#f9f9f9"
+                            d="M32 14h24q-2.55-3.45-6-6H32zm27.5 6H32v6h29.4c-.4-2.1-1.1-4.1-1.9-6"
+                          />
+                          <path
+                            fill="#ed4c5c"
+                            d="M32 26v6h30q0-3.15-.6-6zM4.5 44h55c.8-1.9 1.5-3.9 1.9-6H2.6c.4 2.1 1.1 4.1 1.9 6"
+                          />
+                          <path
+                            fill="#f9f9f9"
+                            d="M8 50h48c1.4-1.8 2.6-3.9 3.5-6h-55c.9 2.1 2.1 4.2 3.5 6"
+                          />
+                          <path
+                            fill="#ed4c5c"
+                            d="M8 50q2.55 3.45 6 6h36q3.45-2.55 6-6z"
+                          />
+                          <path
+                            fill="#f9f9f9"
+                            d="M14 56c5 3.8 11.2 6 18 6s13-2.2 18-6z"
+                          />
+                          <path
+                            fill="#2a5f9e"
+                            d="M32 2C15.4 2 2 15.4 2 32h30z"
+                          />
+                          <path
+                            fill="#fff"
+                            d="m20 22.2l5.6 3.8l-2.1-6.1l5.5-3.8h-6.9L20 10l-2.1 6.1H11l5.5 3.8l-2.1 6.1z"
+                          />
+                        </>
+                      )}
                     </svg>
                     {language}
-                  </Button>
+                  </span>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={() => setLanguage("VN")}>
@@ -105,11 +150,13 @@ const Header = () => {
     ${showTopBar ? "translate-y-0" : "-translate-y-8"} `}
       >
         <div className="h-16 flex items-center justify-between">
-          <img
-            src="/logo/TLUSportLogo.svg"
-            alt="logo"
-            className="h-full w-auto cursor-pointer"
-          />
+          <Link to="/" className="h-full">
+            <img
+              src="/logo/TLUSportLogo.svg"
+              alt="logo"
+              className="h-full w-auto cursor-pointer"
+            />
+          </Link>
 
           <nav className="h-full flex items-center">
             <ul className="flex gap-12 text-xl font-bold rounded-md uppercase h-full items-center">
@@ -161,7 +208,13 @@ const Header = () => {
                 </svg>
               </button>
             </div>
-            <div className="text-2xl cursor-pointer" onClick={() => { setIsOpenLogin(true); setShowTopBar(false); }}>
+            <div
+              className="text-2xl cursor-pointer"
+              onClick={() => {
+                setIsOpenLogin(true);
+                setShowTopBar(false);
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="0.84em"
@@ -175,36 +228,43 @@ const Header = () => {
               </svg>
             </div>
             {/* Mở modal đăng nhập */}
-            {isOpenLogin && <LoginModal isOpen={isOpenLogin} onClose={() => setIsOpenLogin(false)} />}
+            {isOpenLogin && (
+              <LoginModal
+                isOpen={isOpenLogin}
+                onClose={() => setIsOpenLogin(false)}
+              />
+            )}
             {/* carticon */}
-            <div
-              className="text-2xl cursor-pointer relative "
-              onMouseEnter={() => setIsHovered(true)}
-              onMouseLeave={() => setIsHovered(false)}
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="1em"
-                height="1em"
-                viewBox="0 0 24 24"
+            <Link to="/cart">
+              <div
+                className="text-2xl cursor-pointer relative "
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
               >
-                <path
-                  fill="currentColor"
-                  d="M14.665 2.33a.75.75 0 0 1 1.006.335l2.201 4.402c1.353.104 2.202.37 2.75 1.047c.436.539.576 1.209.525 2.136H2.853c-.051-.927.09-1.597.525-2.136c.548-.678 1.397-.943 2.75-1.047l2.201-4.402a.75.75 0 0 1 1.342.67l-1.835 3.67Q8.559 7 9.422 7h5.156q.863-.001 1.586.005l-1.835-3.67a.75.75 0 0 1 .336-1.006"
-                />
-                <path
-                  fill="currentColor"
-                  fillRule="evenodd"
-                  d="M3.555 14.257a74 74 0 0 1-.51-2.507h17.91a74 74 0 0 1-.51 2.507l-.429 2c-.487 2.273-.73 3.409-1.555 4.076S16.474 21 14.15 21h-4.3c-2.324 0-3.486 0-4.31-.667c-.826-.667-1.07-1.803-1.556-4.076zM10 13.25a.75.75 0 0 0 0 1.5h4a.75.75 0 0 0 0-1.5z"
-                  clipRule="evenodd"
-                />
-              </svg>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="1em"
+                  height="1em"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M14.665 2.33a.75.75 0 0 1 1.006.335l2.201 4.402c1.353.104 2.202.37 2.75 1.047c.436.539.576 1.209.525 2.136H2.853c-.051-.927.09-1.597.525-2.136c.548-.678 1.397-.943 2.75-1.047l2.201-4.402a.75.75 0 0 1 1.342.67l-1.835 3.67Q8.559 7 9.422 7h5.156q.863-.001 1.586.005l-1.835-3.67a.75.75 0 0 1 .336-1.006"
+                  />
+                  <path
+                    fill="currentColor"
+                    fillRule="evenodd"
+                    d="M3.555 14.257a74 74 0 0 1-.51-2.507h17.91a74 74 0 0 1-.51 2.507l-.429 2c-.487 2.273-.73 3.409-1.555 4.076S16.474 21 14.15 21h-4.3c-2.324 0-3.486 0-4.31-.667c-.826-.667-1.07-1.803-1.556-4.076zM10 13.25a.75.75 0 0 0 0 1.5h4a.75.75 0 0 0 0-1.5z"
+                    clipRule="evenodd"
+                  />
+                </svg>
 
-              <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
-                3
+                <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                  3
+                </div>
+                {location.pathname !== "/cart" && <HoverCartIcon isHovered={isHovered} />}
               </div>
-              <HoverCartIcon isHovered={isHovered} />
-            </div>
+            </Link>
           </div>
         </div>
       </div>

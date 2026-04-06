@@ -102,7 +102,7 @@ const LoginModal = ({ isOpen, onClose }) => {
             Hoặc
           </p>
         </div>
-        {activeTab === "login" && <LoginForm />}
+        {activeTab === "login" && <LoginForm onClose={onClose} />}
         {activeTab === "register" && <RegisterForm />}
         <div className="flex justify-between items-center text-[12px] text-blue-800 font-bold">
           {activeTab === "login" ? (

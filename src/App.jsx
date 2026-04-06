@@ -4,8 +4,17 @@ import HomePage from "./pages/HomePage";
 import CartLayout from "./theme/CartLayout";
 import CartPage from "./pages/CartPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import { useEffect } from "react";
+import useAuthStore from "./store/useAuthStore";
+import ProtectedRoute from "./components/common/ProtectedRoute";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
+
+  useEffect(() => {
+    useAuthStore.getState().checkAuth();
+  }, [])
+
   const router = createBrowserRouter([
     {
       path: "/",
@@ -29,7 +38,7 @@ function App() {
     },
     {
       path: "/checkout",
-      element: <CartLayout />,
+      element: <ProtectedRoute><CartLayout/></ProtectedRoute> ,
       children: [
         {
           index: true,
@@ -40,7 +49,8 @@ function App() {
   ]);
   return (
     <div>
-        <RouterProvider router={router} />
+      <RouterProvider router={router} />
+      <Toaster />
     </div>
   );
 }

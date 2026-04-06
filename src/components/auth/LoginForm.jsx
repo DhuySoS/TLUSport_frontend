@@ -1,21 +1,48 @@
+import useAuthStore from "@/store/useAuthStore";
 import React, { useState } from "react";
+import { toast } from "sonner";
 
-const LoginForm = () => {
+const LoginForm = ({ onClose }) => {
+  const {login} = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const handleShowPassword = () => {
     setShowPassword(!showPassword);
   };
+  const [credentials, setCredentials] = useState({
+    email: "",
+    password: "",
+  });
+  const handleChange = (e) => {
+    setCredentials({... credentials,
+      [e.target.name]: e.target.value,
+    })
+  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const result = await login(credentials);
+      if (onClose) {
+        onClose();
+      }
+      toast(result?.message, { position: "top-right" });
+    } catch (err) {
+      console.error(err);
+      toast.error(err.response?.data?.message, { position: "top-right" });
+    }
+  }
   return (
-    <div className="space-y-4">
+    <form className="space-y-4" onSubmit={handleSubmit}>
       <div className="relative ">
         <input
-          type="text"
-          id="userName"
+          type="email"
+          id="email"
+          name="email"
           placeholder=""
+          onChange={handleChange}
           className="w-full border rounded-full py-2 px-4 peer placeholder-transparent duration-300 hover:border-neutral-500 focus:border-neutral-500"
         />
         <label
-          htmlFor="userName"
+          htmlFor="email"
           className="text-neutral-400 text-sm font-semibold  absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none ml-1
           peer-focus:bg-white peer-focus:px-2 peer-focus:pt-1  peer-focus:text-[12px]
            peer-focus:top-0 peer-focus:translate-x-0 peer-focus:scale-90 duration-300 
@@ -30,7 +57,9 @@ const LoginForm = () => {
         <input
           type={showPassword ? "text" : "password"}
           id="password"
+          name="password"
           placeholder=""
+          onChange={handleChange}
           className="w-full border rounded-full py-2 px-4 peer placeholder-transparent duration-300 hover:border-neutral-500  focus:border-neutral-500"
         />
         <label
@@ -86,7 +115,7 @@ const LoginForm = () => {
       >
         Đăng nhập
       </button>
-    </div>
+    </form>
   );
 };
 

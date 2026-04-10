@@ -262,7 +262,7 @@ const Header = () => {
                 <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
                   3
                 </div>
-                {location.pathname !== "/cart" && <HoverCartIcon isHovered={isHovered} />}
+                {location.pathname !== "/cart" || location.pathname !== "/checkout" && <HoverCartIcon isHovered={isHovered} />}
               </div>
             </Link>
           </div>

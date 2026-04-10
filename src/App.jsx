@@ -38,7 +38,8 @@ function App() {
     },
     {
       path: "/checkout",
-      element: <ProtectedRoute><CartLayout/></ProtectedRoute> ,
+      element: <CartLayout/> ,
+      // element: <ProtectedRoute><CartLayout/></ProtectedRoute> ,
       children: [
         {
           index: true,

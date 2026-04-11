@@ -36,7 +36,7 @@ const Header = () => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [lastScrollY]);
   return (
-    <header className="w-full sticky top-0 z-50">
+    <header className="w-full sticky top-0 z-50 ">
       <div
         className={`
     bg-[#737373] px-12 mx-auto
@@ -146,7 +146,7 @@ const Header = () => {
       </div>
       <div
         className={`
-     bg-white px-12 mx-auto transition-transform duration-300
+     bg-white px-12 mx-auto transition-transform duration-300 border-b border-b-neutral-200
     ${showTopBar ? "translate-y-0" : "-translate-y-8"} `}
       >
         <div className="h-16 flex items-center justify-between">
@@ -262,7 +262,10 @@ const Header = () => {
                 <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
                   3
                 </div>
-                {location.pathname !== "/cart" || location.pathname !== "/checkout" && <HoverCartIcon isHovered={isHovered} />}
+                {location.pathname !== "/cart" ||
+                  (location.pathname !== "/checkout" && (
+                    <HoverCartIcon isHovered={isHovered} />
+                  ))}
               </div>
             </Link>
           </div>

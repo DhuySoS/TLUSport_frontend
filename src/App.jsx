@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import useAuthStore from "./store/useAuthStore";
 import ProtectedRoute from "./components/common/ProtectedRoute";
 import { Toaster } from "./components/ui/sonner";
+import CheckoutLayout from "./theme/CheckoutLayout";
 
 function App() {
 
@@ -38,7 +39,7 @@ function App() {
     },
     {
       path: "/checkout",
-      element: <CartLayout/> ,
+      element: <CheckoutLayout/> ,
       // element: <ProtectedRoute><CartLayout/></ProtectedRoute> ,
       children: [
         {

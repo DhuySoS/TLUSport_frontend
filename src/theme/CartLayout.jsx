@@ -8,7 +8,6 @@ const CartLayout = () => {
       <div className="flex-none z-50">
         <Header />
       </div>
-      <hr className="bg-neutral-200 w-full flex-none" />
       <Outlet />
     </div>
   );

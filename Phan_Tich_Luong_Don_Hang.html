@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phân Tích Kiến Trúc Luồng Trạng Thái Đơn Hàng (Order State Machine)</title>
+    <style>
+        :root {
+            --primary: #2B3A4A;
+            --secondary: #3F5163;
+            --accent: #D4AF37; /* Muted Gold */
+            --bg-color: #F7F9FC;
+            --text-color: #333;
+            --border-color: #E2E8F0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .document-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #FFFFFF;
+            padding: 50px 60px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #64748B;
+            font-size: 15px;
+            font-style: italic;
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 20px;
+            margin-top: 40px;
+            padding-left: 12px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            align-items: center;
+        }
+
+        h3 {
+            color: var(--secondary);
+            font-size: 17px;
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* State Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #FFF;
+            margin: 0 3px;
+        }
+        .b-pending { background-color: #F59E0B; }
+        .b-processing { background-color: #3B82F6; }
+        .b-shipped { background-color: #8B5CF6; }
+        .b-delivered { background-color: #10B981; }
+        .b-cancelled { background-color: #EF4444; }
+        .b-unpaid { background-color: #64748B; }
+        .b-paid { background-color: #059669; }
+        .b-refunded { background-color: #EAB308; }
+        
+        .flow-box {
+            background-color: #F8FAFC;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .step {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .step::before {
+            content: "➔";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: #FFF;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) {
+            background-color: #F8FAFC;
+        }
+
+        .highlight-box {
+            background-color: #ECFDF5;
+            border-left: 4px solid #10B981;
+            padding: 15px 20px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="document-container">
+    <div class="header">
+        <h1>BÁO CÁO PHÂN TÍCH KIẾN TRÚC</h1>
+        <div class="subtitle">Tài liệu đánh giá Luồng trạng thái Đơn hàng (Order State Machine) & Logic Nghiệp vụ</div>
+    </div>
+
+    <h2>1. Tổng quan Bộ Trạng Thái (State Definitions)</h2>
+    <p>Hệ thống hiện tại được thiết kế với 2 trục trạng thái hoạt động độc lập nhưng có sự ràng buộc chặt chẽ với nhau, tuân thủ đúng chuẩn của các hệ thống E-commerce hiện đại (như Shopee, Lazada).</p>
+    
+    <table>
+        <tr>
+            <th>Loại Trạng Thái</th>
+            <th>Các Giá Trị (Enums)</th>
+            <th>Ý Nghĩa Nghiệp Vụ</th>
+        </tr>
+        <tr>
+            <td><strong>Order Status</strong><br>(Vận hành)</td>
+            <td>
+                <span class="badge b-pending">PENDING</span><br>
+                <span class="badge b-processing">PROCESSING</span><br>
+                <span class="badge b-shipped">SHIPPED</span><br>
+                <span class="badge b-delivered">DELIVERED</span><br>
+                <span class="badge b-cancelled">CANCELLED</span>
+            </td>
+            <td>Quản lý vòng đời vật lý của gói hàng, từ lúc tạo đơn, xác nhận, đóng gói, giao cho đơn vị vận chuyển, đến tay khách hàng hoặc bị hủy.</td>
+        </tr>
+        <tr>
+            <td><strong>Payment Status</strong><br>(Tài chính)</td>
+            <td>
+                <span class="badge b-unpaid">UNPAID</span><br>
+                <span class="badge b-paid">PAID</span><br>
+                <span class="badge b-refunded">REFUNDED</span><br>
+                <span class="badge b-cancelled">FAILED</span>
+            </td>
+            <td>Quản lý dòng tiền của đơn hàng. Đảm bảo nguyên tắc: Có thu tiền thì mới có hoàn tiền, và đánh dấu thời điểm ghi nhận Doanh thu/AI Tracking.</td>
+        </tr>
+    </table>
+
+    <h2>2. Phân tích Luồng Nghiệp Vụ Chính (Main Flows)</h2>
+
+    <h3>A. Luồng Đơn Thanh Toán Tiền Mặt (CASH / COD)</h3>
+    <div class="flow-box">
+        <div class="step"><strong>Tạo đơn (placeOrder):</strong> Hệ thống ghi nhận <span class="badge b-pending">PENDING</span> + <span class="badge b-unpaid">UNPAID</span>. Trừ tồn kho tạm thời.</div>
+        <div class="step"><strong>Admin Duyệt (confirmOrder):</strong> Chuyển sang <span class="badge b-processing">PROCESSING</span>. Cho phép kho bắt đầu nhặt hàng.</div>
+        <div class="step"><strong>Xuất kho (shipOrder):</strong> Giao cho Shipper, chuyển sang <span class="badge b-shipped">SHIPPED</span>.</div>
+        <div class="step"><strong>Giao thành công (deliverOrder):</strong> Chuyển sang <span class="badge b-delivered">DELIVERED</span>. Lúc này mới thu tiền nên cập nhật thành <span class="badge b-paid">PAID</span>. <em>(Trigger AI Tracking tại đây)</em>.</div>
+    </div>
+
+    <h3>B. Luồng Đơn Thanh Toán Trực Tuyến (VNPAY / WALLET)</h3>
+    <div class="flow-box">
+        <div class="step"><strong>Tạo đơn (placeOrder):</strong> Khởi tạo <span class="badge b-pending">PENDING</span> + <span class="badge b-unpaid">UNPAID</span>. <em>Riêng WALLET thanh toán nội bộ thành công ngay sẽ lập tức nhảy sang PAID</em>.</div>
+        <div class="step"><strong>Thanh toán thành công (handlePaymentResult):</strong> VNPAY gọi IPN báo thành công. Cập nhật <span class="badge b-paid">PAID</span>. <em>(Trigger AI Tracking tại đây)</em>.</div>
+        <div class="step"><strong>Admin Duyệt (confirmOrder):</strong> Hệ thống chặn cứng: Chỉ khi đã PAID thì Admin mới duyệt được sang <span class="badge b-processing">PROCESSING</span>.</div>
+        <div class="step"><strong>Xuất kho & Giao hàng (shipOrder & deliverOrder):</strong> Chuyển <span class="badge b-shipped">SHIPPED</span> ➔ <span class="badge b-delivered">DELIVERED</span>. Tiền đã thu từ trước nên giữ nguyên trạng thái PAID.</div>
+    </div>
+
+    <h2>3. Phân tích Các Luồng Rẽ Nhánh & Ngoại Lệ (Edge Cases)</h2>
+
+    <h3>A. Hủy Đơn Hàng Thông Minh (cancelOrder)</h3>
+    <p>Hàm <code>cancelOrder</code> hiện tại là một kiệt tác về xử lý ngoại lệ, bao quát toàn bộ các kịch bản hóc búa nhất của thương mại điện tử:</p>
+    <ul>
+        <li><strong>Bảo vệ phân quyền (IDOR Check):</strong> Ngăn chặn khách hàng đổi ID trên URL để hủy đơn của người khác. Khách hàng chỉ được thao tác trên chính đơn của mình.</li>
+        <li><strong>Chặn hủy trễ:</strong> Khách chỉ được hủy khi <span class="badge b-pending">PENDING</span>. Admin không được hủy khi đã <span class="badge b-shipped">SHIPPED</span> (hàng đã xuất kho không thể thu hồi bằng nút Hủy, phải dùng luồng Hoàn trả).</li>
+        <li><strong>Logic Tài chính chặt chẽ:</strong> Hệ thống kiểm tra Payment Status. Nếu khách đã trả tiền (<span class="badge b-paid">PAID</span> qua VNPAY/Wallet), hệ thống tự động hoàn tiền vào Ví và đánh dấu <span class="badge b-refunded">REFUNDED</span>. Nếu chưa trả tiền, chỉ đánh dấu <strong>FAILED</strong>.</li>
+        <li><strong>Thu hồi tài nguyên:</strong> Hoàn trả chính xác số lượng Tồn kho (Stock) và Lượt dùng Mã giảm giá (Coupon).</li>
+    </ul>
+
+    <h3>B. Xử lý "Đơn Rác" tự động (OrderScheduler)</h3>
+    <div class="flow-box">
+        <div class="step"><strong>CronJob (Mỗi 1 phút):</strong> Quét các đơn VNPAY <span class="badge b-unpaid">UNPAID</span> đã tạo quá 15 phút.</div>
+        <div class="step"><strong>Tái sử dụng logic:</strong> Thay vì viết lại code hủy đơn, Scheduler mượn danh nghĩa Admin (<code>isAdmin = true</code>) để gọi trực tiếp hàm <code>cancelOrder</code>. Điều này đảm bảo tính nhất quán dữ liệu (DRY) tuyệt đối.</div>
+    </div>
+
+    <h2>4. Đánh giá Tối ưu Hệ thống AI & Data</h2>
+    <div class="highlight-box">
+        <strong>Giải quyết triệt để "Data Pollution" (Ô nhiễm dữ liệu AI):</strong><br>
+        Việc dời thời điểm gọi <code>userInteractionService.trackPurchase()</code> (ghi nhận điểm PURCHASE = 5.0) từ lúc Đặt hàng sang lúc <strong>Chắc chắn đã thu được tiền</strong> (VNPAY IPN Success hoặc COD Delivered) là một quyết định kiến trúc xuất sắc. Nó đảm bảo Mô hình Machine Learning Recommendation của hệ thống chỉ học từ những hành vi mua sắm thực tế và thành công, loại bỏ hoàn toàn nhiễu từ các đơn hàng ảo/bị hủy.
+    </div>
+
+    <h2>5. Kết Luận</h2>
+    <p>Kiến trúc luồng đơn hàng hiện tại đạt <strong>mức độ hoàn thiện cao (Enterprise-level)</strong>. Cấu trúc State Machine không chỉ đáp ứng tốt trải nghiệm người dùng (UX) mà còn bịt kín mọi lỗ hổng về mặt kế toán, bảo mật (Authorization/IDOR) và thất thoát tồn kho. Sự kết hợp giữa xử lý thời gian thực (API) và xử lý nền (CronJob) hoạt động đồng bộ và an toàn.</p>
+</div>
+
+</body>
+</html>

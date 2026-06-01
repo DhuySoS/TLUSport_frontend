@@ -1,13 +1,17 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import Cookies from "js-cookie";
 
+console.log("DEBUG VITE_API_URL:", import.meta.env.VITE_API_URL);
+// const baseURL = "http://localhost:8080/api";
+const baseURL = import.meta.env.VITE_API_URL;
 const axiosRefresh = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   withCredentials: true,
 });
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL,
   withCredentials: true,
   headers: {
     "Content-Type": "application/json",
@@ -20,26 +24,31 @@ axiosInstance.interceptors.request.use(
       delete config.headers.skipAuth;
       return config;
     }
-    const token = localStorage.getItem("accessToken");
+    const token = localStorage.getItem("accessToken")?.trim();
     if (token) {
-        // xử lý sau do chưa có backend
-      // const payload = jwtDecode(token);
-      // if (payload.exp * 1000 - 10000 < Date.now()) {
-      //   try {
-      //     const res = await axiosRefresh.post("/auth/refresh-token");
-      //     const newAccessToken = res.data.accessToken;
-      //     localStorage.setItem("accessToken", newAccessToken);
-      //     config.headers["Authorization"] = `Bearer ${newAccessToken}`;
-      //   } catch (error) {
-      //     console.error("Lỗi refreshing token:", error);
-      //     localStorage.removeItem("accessToken");
-      //     window.location.href = "/";
-      //   }
-      // }else {
+      const payload = jwtDecode(token);
+      if (payload.exp * 1000 - 10000 < Date.now()) {
+        try {
+          const rfToken = Cookies.get("refreshToken");
+          const res = await axiosRefresh.post("/auth/refresh-token", {
+            refreshToken: rfToken,
+          });
+          const { accessToken, refreshToken: newRefreshToken } = res.data.data;
+          localStorage.setItem("accessToken", accessToken.trim());
+          Cookies.set("refreshToken", newRefreshToken, { expires: 7 });
+          config.headers["Authorization"] = `Bearer ${accessToken.trim()}`;
+        } catch (error) {
+          console.error("Lỗi refreshing token:", error);
+          localStorage.removeItem("accessToken");
+          Cookies.remove("refreshToken");
+          window.location.href = "/";
+          return Promise.reject(error);
+        }
+      } else {
+        config.headers["Authorization"] = `Bearer ${token.trim()}`;
+      }
+      // khi có backend thì bỏ comment đoạn trên và xóa dòng dưới
       // config.headers["Authorization"] = `Bearer ${token}`;
-      // }
-    // khi có backend thì bỏ comment đoạn trên và xóa dòng dưới
-    config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;
   },

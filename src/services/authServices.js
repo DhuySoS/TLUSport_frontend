@@ -28,34 +28,39 @@ const authServices = {
     });
     return res.data;
   },
-    logout: async () => {
-    const res = await axiosInstance.post("/auth/logout");
+  logout: async (refreshToken) => {
+    const response = await axiosInstance.post("/auth/logout", {
+      refreshToken: refreshToken,
+    });
+    return response.data;
+  },
+  forgotPassword: async (email) => {
+    // email là email của người dùng đã đăng ký, backend sẽ gửi OTP về email này => resetPassword
+    const res = await axiosInstance.post(
+      "/auth/forgot-password",
+      { email },
+      {
+        headers: {
+          skipAuth: true,
+        },
+      },
+    );
     return res.data;
   },
-    forgotPassword: async (email) => {
-        // email là email của người dùng đã đăng ký, backend sẽ gửi OTP về email này => resetPassword
-    const res = await axiosInstance.post("/auth/forgot-password", { email }, {
+  resetPassword: async (resetData) => {
+    // resetData gồm: { email, newPassword, otp }
+    const res = await axiosInstance.post("/auth/reset-password", resetData, {
       headers: {
         skipAuth: true,
       },
     });
     return res.data;
   },
-    resetPassword: async (resetData) => {
-      // resetData gồm: { email, newPassword, otp }
-      const res = await axiosInstance.post("/auth/reset-password", resetData, {
-        headers: {
-          skipAuth: true,
-        },
-      });
-      return res.data;
-    },
   changePassword: async (passwordData) => {
     // passwordData gồm: { currentPassword, newPassword, confirmationPassword }
     const res = await axiosInstance.post("/auth/change-password", passwordData);
     return res.data;
   },
-
 };
 
 export default authServices;

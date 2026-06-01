@@ -1,8 +1,10 @@
 import React from 'react'
-import VoucherCard from '../card/VoucherCard'
-import { ScrollArea } from '../ui/scroll-area'
+import VoucherCard from '../card/cart/VoucherCard'
+import useCartStore from '@/store/useCartStore'
 
 const CartVoucher = () => {
+  const coupons = useCartStore((state) => state.coupons);
+
   return (
     <div className=" border-t border-b py-6 space-y-6 w-full">
       <h2 className="text-lg font-bold text-neutral-800">Mã giảm giá</h2>
@@ -16,13 +18,13 @@ const CartVoucher = () => {
           Áp dụng
         </button>
       </div>
-      <div
-        className="flex items-center gap-4 overflow-x-auto w-full pb-3"
-      >
-        <VoucherCard />
-        <VoucherCard />
-        <VoucherCard />
-        <VoucherCard />
+      <div className="flex items-center gap-4 overflow-x-auto w-full pb-3">
+        {coupons?.filter((coupon) => coupon.isActive === true).map((coupon) => (
+          <div key={coupon.id} className="w-1/2 shrink-0 h-30">
+            <VoucherCard couponData={coupon} />
+          </div>
+        ))}
+
       </div>
     </div>
   );

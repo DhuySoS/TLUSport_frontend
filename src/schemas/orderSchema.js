@@ -24,7 +24,6 @@ export const checkoutSchema = z.object({
   // ward: z.string().min(1, "Vui lòng chọn Phường/Xã"),
 
   note: z.string().optional(),
-  paymentMethod: z.enum(["cod", "momopay", "vnpay", "zalopay"], {
-    errorMap: () => ({ message: "Vui lòng chọn một phương thức thanh toán" }),
-  }),
+  shippingMethodId: z.string().min(1, "Vui lòng chọn phương thức vận chuyển"),
+  paymentMethod: z.string().min(1, "Vui lòng chọn một phương thức thanh toán"),
 });

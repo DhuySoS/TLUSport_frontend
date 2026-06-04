@@ -6,7 +6,6 @@ import { slugify } from "@/lib/utils";
 
 const CartItemCard = ({ item }) => {
   const { removeItem } = useCartStore();
-  console.log("item: ", item);
 
   // Tìm variant hiển thị
   const variantLabel = item.attributeValues
@@ -17,7 +16,10 @@ const CartItemCard = ({ item }) => {
 
   return (
     <div className="flex items-start gap-3">
-      <Link to={`/product-detail/${item.productId}/${slugify(item.productName)}`} className="overflow-hidden shrink-0">
+      <Link
+        to={`/product-detail/${item.productId}/${slugify(item.productName)}`}
+        className="overflow-hidden shrink-0"
+      >
         <img
           src={item.imageUrl || "/product/default.jpg"}
           alt={item.productName}
@@ -36,7 +38,12 @@ const CartItemCard = ({ item }) => {
             onClick={() => removeItem(item.id)}
             className="shrink-0 hover:text-red-500 transition-colors cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="1em"
+              height="1em"
+              viewBox="0 0 24 24"
+            >
               <path
                 fill="none"
                 stroke="currentColor"
@@ -57,7 +64,10 @@ const CartItemCard = ({ item }) => {
           </p>
         </div>
         <p className="text-sm text-neutral-600 mt-1">
-          Số lượng: <span className="font-semibold text-neutral-900">{item.quantity}</span>
+          Số lượng:{" "}
+          <span className="font-semibold text-neutral-900">
+            {item.quantity}
+          </span>
         </p>
       </div>
     </div>

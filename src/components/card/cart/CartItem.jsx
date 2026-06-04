@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import useCartStore from "@/store/useCartStore";
 import { formatCurrency } from "@/lib/formatCurrency";
 import ConfirmDialog from "@/components/cart/ClearCartConfirmDialog";
+import { Link } from "react-router-dom";
+import { slugify } from "@/lib/utils";
 
 const CartItem = ({ item }) => {
   const { updateItem, removeItem, toggleSelectItem, selectedItemIds } =
@@ -121,11 +123,16 @@ const CartItem = ({ item }) => {
         <div className="flex-1 flex md:grid md:grid-cols-4 gap-3 md:gap-4 items-center">
           {/* Ảnh sản phẩm */}
           <div className="relative w-20 h-20 md:w-auto md:h-auto md:col-span-1 shrink-0 rounded-xl overflow-hidden aspect-square self-start">
-            <img
-              src={item.imageUrl || "/product/default.jpg"}
-              alt={item.productName}
-              className="w-full h-full object-cover"
-            />
+            <Link
+              to={`/product-detail/${item.productId}/${slugify(item.productName)}`}
+              className="overflow-hidden shrink-0"
+            >
+              <img
+                src={item.imageUrl || "/product/default.jpg"}
+                alt={item.productName}
+                className="w-full h-full object-cover"
+              />
+            </Link>
             {isOutOfStock && (
               <div className="absolute inset-0 bg-black/45 flex items-center justify-center backdrop-blur-[1px]">
                 <span className="text-white text-xs md:text-sm font-bold px-2 py-0.5 rounded bg-red-600/90 border border-red-500 shadow-md whitespace-nowrap">
@@ -140,7 +147,12 @@ const CartItem = ({ item }) => {
             <div className="flex flex-col gap-1.5 md:gap-3">
               <div className="flex justify-between items-start gap-2 w-full">
                 <h2 className="font-bold text-neutral-800 line-clamp-2 text-sm md:text-base leading-tight md:leading-normal">
-                  {item.productName}
+                  <Link
+                    to={`/product-detail/${item.productId}/${slugify(item.productName)}`}
+                    className="font-bold text-[15px] hover:underline line-clamp-2"
+                  >
+                    {item.productName}
+                  </Link>
                 </h2>
                 {/* Mobile Price */}
                 <div className="text-right md:hidden shrink-0">

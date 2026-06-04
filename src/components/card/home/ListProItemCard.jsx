@@ -292,7 +292,9 @@ const ListProItemCard = ({ productData }) => {
             ))}
         </div>
         <h2 className="text-sx text-neutral-800 font-medium hover:text-blue-500 transition-colors duration-300 cursor-pointer w-full truncate ">
-          {productData?.name}
+          <Link to={`/product-detail/${productData?.id}/${productData?.slug}`}>
+            {productData?.name}
+          </Link>
         </h2>
         <div className="flex justify-start items-center gap-2 font-bold">
           <p className="text-sx text-neutral-900 ">

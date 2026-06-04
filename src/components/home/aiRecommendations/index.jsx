@@ -5,10 +5,55 @@ import aiServices from "@/services/aiServices";
 import { shuffleArray } from "@/lib/shuffleArray";
 import useAuthStore from "@/store/useAuthStore";
 
+const getPaginationRange = (current, total) => {
+  const range = [];
+  const siblingCount = 1;
+
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) {
+      range.push(i);
+    }
+    return range;
+  }
+
+  const leftSiblingIndex = Math.max(current - siblingCount, 1);
+  const rightSiblingIndex = Math.min(current + siblingCount, total);
+
+  const shouldShowLeftDots = leftSiblingIndex > 2;
+  const shouldShowRightDots = rightSiblingIndex < total - 1;
+
+  if (!shouldShowLeftDots && shouldShowRightDots) {
+    const leftItemCount = 3 + 2 * siblingCount;
+    const leftRange = [];
+    for (let i = 1; i <= leftItemCount; i++) {
+      leftRange.push(i);
+    }
+    return [...leftRange, "...", total];
+  }
+
+  if (shouldShowLeftDots && !shouldShowRightDots) {
+    const rightItemCount = 3 + 2 * siblingCount;
+    const rightRange = [];
+    for (let i = total - rightItemCount + 1; i <= total; i++) {
+      rightRange.push(i);
+    }
+    return [1, "...", ...rightRange];
+  }
+
+  if (shouldShowLeftDots && shouldShowRightDots) {
+    const middleRange = [];
+    for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
+      middleRange.push(i);
+    }
+    return [1, "...", ...middleRange, "...", total];
+  }
+  return range;
+};
+
 const AiRecommendations = () => {
   const [products, setProducts] = useState([]);
   const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const { user, isLoading: authLoading } = useAuthStore();
 
@@ -35,31 +80,21 @@ const AiRecommendations = () => {
           );
           const validProducts = productDetails.filter(Boolean);
           setProducts(shuffleArray(validProducts));
-          setHasMore(false); // Gợi ý AI không phân trang
+          setTotalPages(1); // Gợi ý AI không phân trang
         } else {
           // Fallback nếu không có gợi ý từ AI
           const res = await productServices.getAllProducts(pageNumber, 8);
           if (res?.data?.items) {
             setProducts(shuffleArray(res.data.items));
-            setHasMore(false);
+            setTotalPages(res.data.totalPage || 1);
           }
         }
       } else {
         // Khách chưa đăng nhập: Hiển thị sản phẩm mặc định
         const res = await productServices.getAllProducts(pageNumber, 8);
         if (res?.data?.items) {
-          if (pageNumber === 1) {
-            setProducts(shuffleArray(res.data.items));
-          } else {
-            setProducts((prev) => [...prev, ...shuffleArray(res.data.items)]);
-          }
-
-          if (
-            res.data.items.length < 8 ||
-            res.data.currentPage >= res.data.totalPage
-          ) {
-            setHasMore(false);
-          }
+          setProducts(shuffleArray(res.data.items));
+          setTotalPages(res.data.totalPage || 1);
         }
       }
     } catch (error) {
@@ -70,18 +105,14 @@ const AiRecommendations = () => {
   };
 
   useEffect(() => {
-    if (!authLoading) {
-      fetchProducts(1);
-    }
-  }, [user, authLoading]);
+    setPage(1);
+  }, [user]);
 
-  const handleLoadMore = () => {
-    if (!loading && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchProducts(nextPage);
+  useEffect(() => {
+    if (!authLoading) {
+      fetchProducts(page);
     }
-  };
+  }, [page, authLoading, user]);
 
   return (
     <div className="space-y-15 mb-20">
@@ -130,14 +161,53 @@ const AiRecommendations = () => {
             ))}
         </div>
 
-        {hasMore && (
-          <div className="mt-12 flex justify-center">
+        {totalPages > 1 && (
+          <div className="mt-12 flex justify-center items-center gap-2">
             <button
-              onClick={handleLoadMore}
-              disabled={loading}
-              className={`px-8 py-3 rounded-full border cursor-pointer border-neutral-300 text-white font-medium bg-neutral-700 hover:bg-neutral-800 hover:text-white transition-all duration-300 ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={page === 1 || loading}
+              className={`px-4 py-2 rounded-full border border-neutral-300 text-sm font-medium hover:bg-neutral-100 transition-all duration-300 ${
+                page === 1 || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
             >
-              {loading ? "Đang tải..." : "Xem thêm"}
+              Trước
+            </button>
+
+            {getPaginationRange(page, totalPages).map((p, idx) => {
+              if (p === "...") {
+                return (
+                  <span
+                    key={`dots-${idx}`}
+                    className="w-10 h-10 flex items-center justify-center text-neutral-400 select-none font-bold animate-pulse"
+                  >
+                    ...
+                  </span>
+                );
+              }
+              return (
+                <button
+                  key={p}
+                  onClick={() => setPage(p)}
+                  disabled={loading}
+                  className={`w-10 h-10 rounded-full border text-sm font-medium flex items-center justify-center transition-all duration-300 ${
+                    p === page
+                      ? "bg-neutral-800 text-white border-neutral-800"
+                      : "border-neutral-300 text-neutral-700 hover:bg-neutral-100 cursor-pointer"
+                  }`}
+                >
+                  {p}
+                </button>
+              );
+            })}
+
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={page === totalPages || loading}
+              className={`px-4 py-2 rounded-full border border-neutral-300 text-sm font-medium hover:bg-neutral-100 transition-all duration-300 ${
+                page === totalPages || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+              }`}
+            >
+              Sau
             </button>
           </div>
         )}

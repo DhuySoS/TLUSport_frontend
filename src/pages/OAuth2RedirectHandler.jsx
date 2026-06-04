@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Cookies from "js-cookie";
 import useAuthStore from "@/store/useAuthStore";
@@ -8,15 +8,20 @@ import { toast } from "sonner";
 const OAuth2RedirectHandler = () => {
     const navigate = useNavigate();
     const { fetchMyProfile, clearState } = useAuthStore();
+    const hasCalled = useRef(false);
 
     useEffect(() => {
+        if (hasCalled.current) return;
+
         // Backend trả về: ?access_token=xyz&refresh_token=abc
         const params = new URLSearchParams(window.location.search);
 
         const access_token = params.get("access_token");
         const refresh_token = params.get("refresh_token");
+        const error = params.get("error");
 
         if (access_token) {
+            hasCalled.current = true;
             localStorage.setItem("accessToken", access_token);
             if (refresh_token) {
                 Cookies.set("refreshToken", refresh_token, { expires: 7 });
@@ -37,10 +42,11 @@ const OAuth2RedirectHandler = () => {
                     navigate("/");
                 });
         } else {
+            hasCalled.current = true;
             toast.error(error || "Đăng nhập Google thất bại!");
             navigate("/");
         }
-    }, []);
+    }, [fetchMyProfile, clearState, navigate]);
 
     return (
         <div className="h-screen w-full flex items-center justify-center">

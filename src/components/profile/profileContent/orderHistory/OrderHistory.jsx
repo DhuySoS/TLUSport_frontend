@@ -35,6 +35,8 @@ const OrderHistory = () => {
     try {
       // Truyền size lớn (ví dụ 1000) để lấy toàn bộ đơn hàng 1 lần
       const res = await orderServices.getMyOrders(1, 1000);
+      console.log("orders", res);
+
       if (res && res.data) {
         setOrders(res.data.items || []);
       }
@@ -86,7 +88,23 @@ const OrderHistory = () => {
       statusMap[status] || { label: status, color: "text-gray-600 bg-gray-100" }
     );
   };
-
+  const handleDeliverOrder = async (orderId) => {
+    try {
+      const res = await orderServices.deliverOrder(orderId);
+      toast.success(res?.message || "Xác nhận nhận hàng thành công!", {
+        position: "top-right",
+      });
+      fetchOrders(); // Tải lại danh sách đơn hàng
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message || "Xác nhận nhận hàng thất bại!",
+        {
+          position: "top-right",
+        },
+      );
+    }
+  };
   const handleCancelOrder = async (orderId) => {
     try {
       const res = await orderServices.cancelOrder(orderId);
@@ -114,7 +132,7 @@ const OrderHistory = () => {
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Lỗi khi tải thông tin hoàn trả hàng."
+        error.response?.data?.message || "Lỗi khi tải thông tin hoàn trả hàng.",
       );
     } finally {
       setReturnDetailLoading(false);
@@ -125,12 +143,12 @@ const OrderHistory = () => {
     activeTab === "ALL"
       ? orders
       : activeTab === "RETURNS"
-      ? orders.filter((order) =>
-          ["RETURN_REQUESTED", "RETURNED", "RETURN_REJECTED"].includes(
-            order.orderStatus
+        ? orders.filter((order) =>
+            ["RETURN_REQUESTED", "RETURNED", "RETURN_REJECTED"].includes(
+              order.orderStatus,
+            ),
           )
-        )
-      : orders.filter((order) => order.orderStatus === activeTab);
+        : orders.filter((order) => order.orderStatus === activeTab);
 
   if (isLoading) {
     return (
@@ -250,9 +268,21 @@ const OrderHistory = () => {
                               {item.productName}
                             </h4>
                           </div>
-                          <p className="text-xs sm:text-sm font-normal text-neutral-500 mt-1">
-                            x{item.quantity}
-                          </p>
+                          <div className="flex gap-2">
+                            {item?.attributeValues?.map((i, idx) => (
+                              <span
+                                key={idx}
+                                className="text-xs sm:text-sm font-normal text-neutral-500 mt-1"
+                              >
+                                {i.attributeName}: {i.valueName}
+                                {idx !== item.attributeValues.length - 1 &&
+                                  ", "}
+                              </span>
+                            ))}
+                            <span className="text-xs sm:text-sm font-normal text-neutral-500 mt-1">
+                              SL: x{item.quantity}
+                            </span>
+                          </div>
                         </div>
                         <div className="text-left sm:text-right flex items-center sm:items-start gap-2">
                           <p className="text-sm sm:text-lg font-medium text-red-500">
@@ -295,13 +325,8 @@ const OrderHistory = () => {
 
                       {order.orderStatus === "SHIPPED" && (
                         <button
-                          onClick={() =>
-                            toast.info(
-                              "Shipper đang vận chuyển đơn hàng, bạn sẽ nhận được thông báo khi giao hàng thành công.",
-                            )
-                          }
-                          className="w-full sm:w-auto text-center justify-center px-6 py-2.5 bg-neutral-800 text-white text-sm font-bold rounded hover:bg-neutral-900 transition-colors cursor-pointer opacity-50 "
-                          disabled
+                          onClick={() => handleDeliverOrder(order.orderId)}
+                          className="w-full sm:w-auto text-center justify-center px-6 py-2.5 bg-neutral-800 text-white text-sm font-bold rounded hover:bg-neutral-900 transition-colors cursor-pointer"
                         >
                           Đã nhận được hàng
                         </button>
@@ -324,7 +349,11 @@ const OrderHistory = () => {
                         </>
                       )}
 
-                      {["RETURN_REQUESTED", "RETURNED", "RETURN_REJECTED"].includes(order.orderStatus) && (
+                      {[
+                        "RETURN_REQUESTED",
+                        "RETURNED",
+                        "RETURN_REJECTED",
+                      ].includes(order.orderStatus) && (
                         <button
                           onClick={() => handleViewReturnDetails(order)}
                           className="w-full sm:w-auto text-center justify-center px-5 py-2.5 border border-neutral-300 bg-white text-neutral-700 text-sm font-bold rounded hover:bg-neutral-50 transition-colors cursor-pointer"

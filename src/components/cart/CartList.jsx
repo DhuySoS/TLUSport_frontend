@@ -4,7 +4,6 @@ import CartItem from "../card/cart/CartItem";
 import useCartStore from "@/store/useCartStore";
 import ConfirmDialog from "./ClearCartConfirmDialog";
 
-
 const CartItemSkeleton = () => (
   <div className="w-full flex items-center border-t py-4 gap-2 animate-pulse">
     <div className="w-5 h-5 shrink-0 bg-neutral-200 rounded-sm" />
@@ -23,9 +22,14 @@ const CartItemSkeleton = () => (
 );
 
 const CartList = () => {
-  const { cartItems, isLoading, selectedItemIds, toggleSelectAll, clearCart } = useCartStore();
-  const allSelected = cartItems.length > 0 && selectedItemIds.length === cartItems.length;
+  const { cartItems, isLoading, selectedItemIds, toggleSelectAll, clearCart } =
+    useCartStore();
+  const activeCartItems = cartItems.filter((item) => (item.stockQuantity ?? 0) > 0);
+  const allSelected =
+    activeCartItems.length > 0 &&
+    activeCartItems.every((item) => selectedItemIds.includes(item.id));
   const [showConfirm, setShowConfirm] = useState(false);
+  console.log("cartItems", cartItems);
 
   const handleClearCart = () => {
     setShowConfirm(false);
@@ -55,12 +59,14 @@ const CartList = () => {
               onChange={toggleSelectAll}
             />
             <div
-              className={`w-5 h-5 shrink-0 border-2 rounded-sm flex items-center justify-center transition-all duration-200 ${allSelected ? "border-blue-700" : "border-neutral-500"
-                }`}
+              className={`w-5 h-5 shrink-0 border-2 rounded-sm flex items-center justify-center transition-all duration-200 ${
+                allSelected ? "border-blue-700" : "border-neutral-500"
+              }`}
             >
               <span
-                className={`w-3 h-3 rounded-[1px] bg-blue-700 transition-opacity duration-200 ${allSelected ? "opacity-100" : "opacity-0"
-                  }`}
+                className={`w-3 h-3 rounded-[1px] bg-blue-700 transition-opacity duration-200 ${
+                  allSelected ? "opacity-100" : "opacity-0"
+                }`}
               />
             </div>
             <span className="text-sm font-semibold">Chọn tất cả sản phẩm</span>
@@ -82,19 +88,34 @@ const CartList = () => {
             </>
           ) : cartItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4 text-neutral-400">
-              <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="64"
+                height="64"
+                viewBox="0 0 24 24"
+              >
                 <path
                   fill="currentColor"
                   d="M17 18a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2M1 2h3.27l.94 2H20a1 1 0 0 1 1 1c0 .17-.05.34-.12.5l-3.58 6.47c-.34.61-1 1.03-1.75 1.03H8.1l-.9 1.63l-.03.12a.25.25 0 0 0 .25.25H19v2H7a2 2 0 0 1-2-2c0-.35.09-.68.24-.96L6.6 14L3 6H1zm6 16a2 2 0 0 1 2 2a2 2 0 0 1-2 2a2 2 0 0 1-2-2c0-1.11.89-2 2-2z"
                 />
               </svg>
-              <p className="text-lg font-semibold">Giỏ hàng của bạn đang trống</p>
-              <p className="text-sm">Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm</p>
+              <p className="text-lg font-semibold">
+                Giỏ hàng của bạn đang trống
+              </p>
+              <p className="text-sm">
+                Hãy thêm sản phẩm vào giỏ hàng để tiếp tục mua sắm
+              </p>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <CartItem key={item.id} item={item} />
-            ))
+            [...cartItems]
+              .sort((a, b) => {
+                const stockA = a.stockQuantity ?? 0;
+                const stockB = b.stockQuantity ?? 0;
+                if (stockA === 0 && stockB > 0) return 1;
+                if (stockA > 0 && stockB === 0) return -1;
+                return 0;
+              })
+              .map((item) => <CartItem key={item.id} item={item} />)
           )}
         </ScrollArea>
       </div>

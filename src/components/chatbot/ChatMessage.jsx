@@ -3,6 +3,9 @@ import { Bot } from "lucide-react";
 import ChatProductCard from "./ChatProductCard";
 
 const ChatMessage = ({ msg }) => {
+  if (!msg.text && (!msg.products || msg.products.length === 0)) {
+    return null;
+  }
   const isUser = msg.sender === "user";
 
   return (

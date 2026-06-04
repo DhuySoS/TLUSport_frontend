@@ -114,7 +114,7 @@ const AuthModal = ({ isOpen, onClose }) => {
                   type="button"
                   onClick={() => {
                     // const rootUrl = "http://localhost:8080";
-                    const rootUrl = "http://34.27.4.197:8080";
+                    const rootUrl = "https://api.tlusport.id.vn";
                     window.location.href = `${rootUrl}/oauth2/authorization/google`;
                   }}
                   className="w-full py-2.5 px-4 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 hover:shadow-sm transition-all duration-300 flex items-center justify-center gap-3 bg-white"

@@ -19,11 +19,10 @@ const Header = () => {
   const [showTopBar, setShowTopBar] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
-  const [isOpenLogin, setIsOpenLogin] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const location = useLocation();
   const cartItems = useCartStore((state) => state.cartItems);
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isOpenLogin, setIsOpenLogin } = useAuthStore();
 
   useEffect(() => {
     const handleScroll = () => {

@@ -2,7 +2,6 @@ import axios from "axios";
 import { jwtDecode } from "jwt-decode";
 import Cookies from "js-cookie";
 
-console.log("DEBUG VITE_API_URL:", import.meta.env.VITE_API_URL);
 // const baseURL = "http://localhost:8080/api";
 const baseURL = import.meta.env.VITE_API_URL;
 const axiosRefresh = axios.create({

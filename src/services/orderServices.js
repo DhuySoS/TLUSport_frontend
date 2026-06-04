@@ -51,6 +51,14 @@ const orderServices = {
       throw error;
     }
   },
+  deliverOrder: async (orderId) => {
+    try {
+      const res = await axiosInstance.put(`/orders/${orderId}/deliver`);
+      return res.data;
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default orderServices;

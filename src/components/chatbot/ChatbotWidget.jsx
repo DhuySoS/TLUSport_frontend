@@ -5,16 +5,26 @@ import ChatbotHeader from "./ChatbotHeader";
 import ChatMessage from "./ChatMessage";
 import ChatInput from "./ChatInput";
 import TypingIndicator from "./TypingIndicator";
+import useAuthStore from "@/store/useAuthStore";
 
 const ChatbotWidget = () => {
+  const { user, setIsOpenLogin } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      sender: "bot",
-      text: "Xin chào! Tôi là trợ lý AI của TLUSport. Tôi có thể giúp gì cho bạn?",
-      products: [],
-    },
-  ]);
+  const [sessionId, setSessionId] = useState(
+    () => sessionStorage.getItem("chatbot_session_id") || null,
+  );
+  const [messages, setMessages] = useState(() => {
+    const saved = sessionStorage.getItem("chatbot_messages");
+    return saved
+      ? JSON.parse(saved)
+      : [
+          {
+            sender: "bot",
+            text: "Xin chào! Tôi là trợ lý AI của TLUSport. Tôi có thể giúp gì cho bạn?",
+            products: [],
+          },
+        ];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -23,6 +33,7 @@ const ChatbotWidget = () => {
   };
 
   useEffect(() => {
+    sessionStorage.setItem("chatbot_messages", JSON.stringify(messages));
     if (isOpen) {
       scrollToBottom();
     }
@@ -37,14 +48,11 @@ const ChatbotWidget = () => {
     setMessages((prev) => [...prev, { sender: "bot", text: "", products: [] }]);
 
     try {
-      const response = await fetch("http://localhost:5001/api/ai/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        // Nếu đã có tích hợp Auth thì có thể lấy id user truyền vào đây
-        body: JSON.stringify({ message: inputText }),
-      });
+      const response = await aiServices.chatWithBot(
+        inputText,
+        sessionId,
+        user?.userId,
+      );
 
       if (!response.ok) {
         throw new Error("Lỗi kết nối AI Server");
@@ -72,6 +80,12 @@ const ChatbotWidget = () => {
             if (block.startsWith("data: ")) {
               try {
                 const data = JSON.parse(block.replace("data: ", ""));
+
+                // Lưu lại sessionId nếu có và chưa được set
+                if (data.session_id && data.session_id !== sessionId) {
+                  setSessionId(data.session_id);
+                  sessionStorage.setItem("chatbot_session_id", data.session_id);
+                }
 
                 if (data.type === "chunk") {
                   if (data.content) fullText += data.content;
@@ -148,10 +162,10 @@ const ChatbotWidget = () => {
         className={`fixed z-50 bg-white border border-neutral-200 shadow-2xl flex flex-col transition-all duration-300
           inset-x-0 bottom-0 rounded-t-2xl rounded-b-none h-[65vh]
           sm:inset-x-auto sm:bottom-8 sm:right-8 sm:w-96 sm:h-150 sm:max-h-[80vh] sm:rounded-2xl sm:origin-bottom-right ${
-          isOpen
-            ? "scale-100 opacity-100"
-            : "scale-0 opacity-0 pointer-events-none"
-        }`}
+            isOpen
+              ? "scale-100 opacity-100"
+              : "scale-0 opacity-0 pointer-events-none"
+          }`}
       >
         <ChatbotHeader onClose={() => setIsOpen(false)} />
 

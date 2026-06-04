@@ -8,6 +8,8 @@ const useAuthStore = create((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: true,
+  isOpenLogin: false,
+  setIsOpenLogin: (isOpen) => set({ isOpenLogin: isOpen }),
   clearState: () => {
     set({ user: null, isAuthenticated: false, isLoading: false });
   },
@@ -73,6 +75,9 @@ const useAuthStore = create((set, get) => ({
       Cookies.remove("refreshToken");
       // Reset giỏ hàng ở FE (không gọi API)
       useCartStore.getState().clearCartLocal();
+      // Xoá session chatbot
+      sessionStorage.removeItem("chatbot_session_id");
+      sessionStorage.removeItem("chatbot_messages");
       set({ user: null, isAuthenticated: false });
       setTimeout(() => {
         window.location.href = "/";

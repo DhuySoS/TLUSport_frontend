@@ -52,9 +52,9 @@ const useCartStore = create(
 
           const items = cartData?.items ?? [];
           set((state) => {
-            // Giữ lại các ID đang được chọn nếu sản phẩm đó vẫn còn trong giỏ hàng
+            // Giữ lại các ID đang được chọn nếu sản phẩm đó vẫn còn trong giỏ hàng và còn hàng (stockQuantity > 0)
             const validSelectedIds = state.selectedItemIds.filter((id) =>
-              items.some((item) => item.id === id)
+              items.some((item) => item.id === id && (item.stockQuantity ?? 0) > 0)
             );
             return {
               cartItems: items,
@@ -88,7 +88,7 @@ const useCartStore = create(
         cartItems: items,
         totalAmount: cartData?.totalAmount ?? 0,
         isLoading: false,
-        selectedItemIds: items.map((i) => i.id),
+        selectedItemIds: items.filter((i) => (i.stockQuantity ?? 0) > 0).map((i) => i.id),
       });
     } catch (error) {
       const msg =
@@ -166,7 +166,7 @@ const useCartStore = create(
         cartItems: items,
         totalAmount: cartData?.totalAmount ?? 0,
         sessionId: null,
-        selectedItemIds: items.map((i) => i.id),
+        selectedItemIds: items.filter((i) => (i.stockQuantity ?? 0) > 0).map((i) => i.id),
       });
     } catch (error) {
       // Merge lỗi thì load lại giỏ user bình thường
@@ -187,6 +187,10 @@ const useCartStore = create(
 
   toggleSelectItem: (itemId) => {
     set((state) => {
+      const item = state.cartItems.find((i) => i.id === itemId);
+      if (item && (item.stockQuantity ?? 0) <= 0) {
+        return {}; // Không cho phép chọn sản phẩm hết hàng
+      }
       const isSelected = state.selectedItemIds.includes(itemId);
       return {
         selectedItemIds: isSelected
@@ -198,10 +202,14 @@ const useCartStore = create(
 
   toggleSelectAll: () => {
     set((state) => {
-      const allSelected =
-        state.selectedItemIds.length === state.cartItems.length;
+      const activeItems = state.cartItems.filter((i) => (i.stockQuantity ?? 0) > 0);
+      const allActiveSelected =
+        activeItems.length > 0 &&
+        activeItems.every((i) => state.selectedItemIds.includes(i.id));
       return {
-        selectedItemIds: allSelected ? [] : state.cartItems.map((i) => i.id),
+        selectedItemIds: allActiveSelected
+          ? state.selectedItemIds.filter((id) => !activeItems.some((i) => i.id === id))
+          : [...new Set([...state.selectedItemIds, ...activeItems.map((i) => i.id)])],
       };
     });
   },

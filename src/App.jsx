@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Outlet } from "react-router-dom";
 import MasterLayout from "./theme/MasterLayout";
 import HomePage from "./pages/HomePage";
 import CartLayout from "./theme/CartLayout";
@@ -30,8 +30,16 @@ function App() {
 
   const router = createBrowserRouter([
     {
-      path: "/",
-      element: <MasterLayout />,
+      element: (
+        <>
+          <Outlet />
+          <Toaster richColors position="top-right" />
+        </>
+      ),
+      children: [
+        {
+          path: "/",
+          element: <MasterLayout />,
       children: [
         {
           index: true,
@@ -112,11 +120,11 @@ function App() {
       path: "*",
       element: <NotFound />,
     },
-  ]);
+  ]
+}]);
   return (
     <div>
       <RouterProvider router={router} />
-      <Toaster richColors position="top-right" />
     </div>
   );
 }

@@ -1,10 +1,10 @@
-import AiRecommendations from '@/components/home/aiRecommendations'
-import BannerSection from '@/components/home/BannerSection'
-import CategorySection from '@/components/home/categorySection/CategorySection'
-import ProductSection from '@/components/home/productListSection'
-import TestimotionSection from '@/components/home/testimonialSection'
-import ChatbotWidget from '@/components/chatbot/ChatbotWidget'
-import React from 'react'
+import AiRecommendations from "@/components/home/aiRecommendations";
+import BannerSection from "@/components/home/BannerSection";
+import CategorySection from "@/components/home/categorySection/CategorySection";
+import ProductSection from "@/components/home/productListSection";
+import TestimotionSection from "@/components/home/testimonialSection";
+import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
+import React from "react";
 
 const HomePage = () => {
   return (
@@ -14,9 +14,9 @@ const HomePage = () => {
       <ProductSection />
       <AiRecommendations />
       {/* <TestimotionSection/> */}
-      <ChatbotWidget />
+      {/* <ChatbotWidget /> */}
     </div>
   );
-}
+};
 
-export default HomePage
+export default HomePage;

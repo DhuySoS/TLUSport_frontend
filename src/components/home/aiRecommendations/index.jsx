@@ -139,26 +139,26 @@ const AiRecommendations = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-8">
-          {products.map((product, index) => (
-            <div key={product.id ? `${product.id}-${index}` : index}>
-              <ListProItemCard productData={product} />
-            </div>
-          ))}
-          {loading &&
-            Array.from({ length: 4 }).map((_, index) => (
-              <div
-                key={`skeleton-${index}`}
-                className="flex flex-col gap-4 animate-pulse"
-              >
-                <div className="bg-neutral-200 rounded-xl aspect-3/4 w-full" />
-                <div className="flex gap-2">
-                  <div className="w-10 h-6 bg-neutral-200 rounded-full" />
-                  <div className="w-10 h-6 bg-neutral-200 rounded-full" />
+          {loading
+            ? Array.from({ length: 8 }).map((_, index) => (
+                <div
+                  key={`skeleton-${index}`}
+                  className="flex flex-col gap-4 animate-pulse"
+                >
+                  <div className="bg-neutral-200 rounded-xl aspect-3/4 w-full" />
+                  <div className="flex gap-2">
+                    <div className="w-10 h-6 bg-neutral-200 rounded-full" />
+                    <div className="w-10 h-6 bg-neutral-200 rounded-full" />
+                  </div>
+                  <div className="bg-neutral-200 h-4 w-3/4 rounded" />
+                  <div className="bg-neutral-200 h-4 w-1/2 rounded" />
                 </div>
-                <div className="bg-neutral-200 h-4 w-3/4 rounded" />
-                <div className="bg-neutral-200 h-4 w-1/2 rounded" />
-              </div>
-            ))}
+              ))
+            : products.map((product, index) => (
+                <div key={product.id ? `${product.id}-${index}` : index}>
+                  <ListProItemCard productData={product} />
+                </div>
+              ))}
         </div>
 
         {totalPages > 1 && (

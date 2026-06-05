@@ -2,7 +2,7 @@ import Breadcrumbs from "@/components/common/Breadcrumbs";
 import ProductDescription from "@/components/productDetail/description";
 import ProductGallery from "@/components/productDetail/ProductGallery";
 import ProductInfo from "@/components/productDetail/info/ProductInfo";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import ProductRecommendations from "@/components/productDetail/ProductRecommendations";
 import ProductReviews from "@/components/productDetail/reviews";
 import ProductViewed from "@/components/productDetail/ProductViewed";
@@ -27,6 +27,18 @@ const ProductDetailPage = () => {
   const [selectedColor, setSelectedColor] = useState(null);
   const [selectedSize, setSelectedSize] = useState(null);
   const [quantity, setQuantity] = useState(1);
+
+  const hasColors = useMemo(() => {
+    return productDetail?.skus?.some((sku) =>
+      sku.attributeValues?.some((attr) => attr.attributeId === 3)
+    ) || false;
+  }, [productDetail]);
+
+  const hasSizes = useMemo(() => {
+    return productDetail?.skus?.some((sku) =>
+      sku.attributeValues?.some((attr) => attr.attributeId === 2)
+    ) || false;
+  }, [productDetail]);
 
   useEffect(() => {
     if (!id) return;
@@ -62,24 +74,24 @@ const ProductDetailPage = () => {
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAddToCart = async () => {
-    if (!selectedColor) {
+    if (hasColors && !selectedColor) {
       toast.error("Vui lòng chọn màu sắc");
       return;
     }
-    if (!selectedSize) {
+    if (hasSizes && !selectedSize) {
       toast.error("Vui lòng chọn kích cỡ");
       return;
     }
 
-    const activeSku = productDetail?.skus?.find(
-      (sku) =>
-        sku.attributeValues?.some(
-          (attr) => attr.attributeId === 3 && attr.valueId === selectedColor,
-        ) &&
-        sku.attributeValues?.some(
-          (attr) => attr.attributeId === 2 && attr.valueId === selectedSize,
-        ),
-    );
+    const activeSku = productDetail?.skus?.find((sku) => {
+      const matchesColor = !hasColors || sku.attributeValues?.some(
+        (attr) => attr.attributeId === 3 && attr.valueId === selectedColor,
+      );
+      const matchesSize = !hasSizes || sku.attributeValues?.some(
+        (attr) => attr.attributeId === 2 && attr.valueId === selectedSize,
+      );
+      return matchesColor && matchesSize;
+    });
 
     if (!activeSku) {
       toast.error("Phiên bản này hiện không khả dụng");

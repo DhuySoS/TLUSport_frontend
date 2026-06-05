@@ -150,7 +150,7 @@ const ChatbotWidget = () => {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className={`fixed bottom-4 right-4 sm:bottom-1 sm:right-8 z-50 p-4 bg-black text-white rounded-full shadow-lg transition-transform duration-300 hover:scale-110 ${
+        className={`fixed bottom-4 right-4 sm:bottom-8 sm:right-8 z-50 p-4 bg-black text-white rounded-full shadow-lg transition-transform duration-300 hover:scale-110 ${
           isOpen ? "scale-0 opacity-0" : "scale-100 opacity-100"
         }`}
       >

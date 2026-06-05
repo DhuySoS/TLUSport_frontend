@@ -33,7 +33,7 @@ const LoginForm = ({ onClose }) => {
         onClose();
       }
       toast(result?.message, { position: "top-right" });
-      window.location.href = "/";
+      window.location.reload();
     } catch (err) {
       console.error(err);
       toast.error(err.response?.data?.message, { position: "top-right" });

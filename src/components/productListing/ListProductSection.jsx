@@ -58,7 +58,7 @@ const ListProductSection = ({
       />
 
       {/* Product Grid */}
-      {isLoading ? (
+      {isLoading && displayProducts.length === 0 ? (
         <div className="grid gap-4 md:grid-cols-4 grid-cols-2 gap-y-8">
           {Array(8)
             .fill(0)
@@ -89,7 +89,11 @@ const ListProductSection = ({
         </div>
       ) : (
         // Product grid
-        <div className="grid gap-4 md:grid-cols-4 grid-cols-2 gap-y-8">
+        <div
+          className={`grid gap-4 md:grid-cols-4 grid-cols-2 gap-y-8 transition-opacity duration-300 ${
+            isLoading ? "opacity-50 pointer-events-none" : "opacity-100"
+          }`}
+        >
           {displayProducts.map((product, index) => (
             <ListProItemCard key={product.id ?? index} productData={product} />
           ))}

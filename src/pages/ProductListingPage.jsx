@@ -2,7 +2,7 @@ import Breadcrumbs from "@/components/common/Breadcrumbs";
 import CategoryBanner from "@/components/productListing/CategoryBanner";
 import ListProductSection from "@/components/productListing/ListProductSection";
 import SidebarFilter from "@/components/productListing/SidebarFilter";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import useCategoryStore from "@/store/useCategoryStore";
 import productServices from "@/services/productServices";
@@ -46,9 +46,13 @@ const ProductListingPage = () => {
     });
   }, [category?.id]);
 
-  // Reset page về 1 khi bất kỳ bộ lọc nào thay đổi
+  // Reset page về 1 khi bất kỳ bộ lọc nào thay đổi và cuộn lên đầu trang
   useEffect(() => {
     setPage(1);
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   }, [
     category?.id,
     selectedCategoryId,

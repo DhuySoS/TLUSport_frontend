@@ -1,14 +1,14 @@
 import React from "react";
 import { toast } from "sonner";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { Navigate } from "react-router-dom";
-
+import { useNavigate } from "react-router-dom";
 
 const AddToCartToast = ({ t, imageUrl, productName, variantLabel, price }) => {
+  const navigate = useNavigate();
 
-  const handleNavigateToCart = () => {
+  const handleViewCart = () => {
     toast.dismiss(t);
-    Navigate("/cart");
+    navigate("/cart");
   };
   return (
     <div className="flex flex-col items-start gap-3 bg-white border border-neutral-200 rounded-xl shadow-lg p-3 w-80">
@@ -20,7 +20,12 @@ const AddToCartToast = ({ t, imageUrl, productName, variantLabel, price }) => {
           onClick={() => toast.dismiss(t)}
           className="shrink-0 text-neutral-400 hover:text-neutral-600 transition-colors mt-0.5 cursor-pointer"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+          >
             <path
               fill="none"
               stroke="currentColor"
@@ -46,7 +51,6 @@ const AddToCartToast = ({ t, imageUrl, productName, variantLabel, price }) => {
             <p className="text-sm font-semibold text-neutral-800 line-clamp-2 leading-tight">
               {productName}
             </p>
-
           </div>
 
           {variantLabel && (
@@ -57,24 +61,26 @@ const AddToCartToast = ({ t, imageUrl, productName, variantLabel, price }) => {
             {formatCurrency(price)}
           </p>
         </div>
-
       </div>
-      <div className="flex flex-col justify-between items-end " >
+      <div className="flex flex-col justify-between items-end ">
         {/* Nút xem giỏ hàng */}
-        <p
-          onClick={handleNavigateToCart}
+        <button
+          onClick={handleViewCart}
           className="shrink-0 text-sm font-semibold cursor-pointer bg-neutral-800 text-white px-3 py-1.5 rounded-lg hover:bg-neutral-900 transition-colors whitespace-nowrap"
         >
           Xem giỏ hàng
-        </p>
+        </button>
       </div>
-
-
     </div>
   );
 };
 
-export const showAddToCartToast = ({ imageUrl, productName, variantLabel, price }) => {
+export const showAddToCartToast = ({
+  imageUrl,
+  productName,
+  variantLabel,
+  price,
+}) => {
   toast.custom(
     (t) => (
       <AddToCartToast
@@ -85,7 +91,7 @@ export const showAddToCartToast = ({ imageUrl, productName, variantLabel, price 
         price={price}
       />
     ),
-    { duration: 6000, position: "top-right" }
+    { duration: 6000, position: "top-right" },
   );
 };
 

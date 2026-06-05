@@ -37,7 +37,10 @@ const CartItem = ({ item }) => {
   };
 
   const handleQuantityChange = (newQty) => {
-    const validated = Math.max(0, newQty);
+    let validated = Math.max(0, newQty);
+    if (item.stockQuantity !== undefined && validated > item.stockQuantity) {
+      validated = item.stockQuantity;
+    }
 
     // Khi giảm về 0 → hỏi xác nhận xóa
     if (validated === 0) {
@@ -59,7 +62,13 @@ const CartItem = ({ item }) => {
 
   const handleInputChange = (e) => {
     const val = parseInt(e.target.value, 10);
-    if (!isNaN(val)) setQuantity(val);
+    if (!isNaN(val)) {
+      if (item.stockQuantity !== undefined && val > item.stockQuantity) {
+        setQuantity(item.stockQuantity);
+      } else {
+        setQuantity(val);
+      }
+    }
   };
 
   const handleInputBlur = () => {
@@ -156,6 +165,11 @@ const CartItem = ({ item }) => {
                 </h2>
                 {/* Mobile Price */}
                 <div className="text-right md:hidden shrink-0">
+                  {!isOutOfStock && item.stockQuantity !== undefined && (
+                    <p className="text-xs text-neutral-700 font-semibold mb-1">
+                      Còn lại: {item.stockQuantity}
+                    </p>
+                  )}
                   <p className="text-sm font-bold text-neutral-800">
                     {formatCurrency(Number(item.price) * item.quantity)}
                   </p>
@@ -216,10 +230,14 @@ const CartItem = ({ item }) => {
                 />
                 <button
                   onClick={() => handleQuantityChange(quantity + 1)}
-                  disabled={isUpdating || isOutOfStock}
+                  disabled={
+                    isUpdating ||
+                    isOutOfStock ||
+                    quantity >= (item.stockQuantity ?? 0)
+                  }
                   className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
-                    isOutOfStock
-                      ? "cursor-not-allowed"
+                    isOutOfStock || quantity >= (item.stockQuantity ?? 0)
+                      ? "cursor-not-allowed text-neutral-400"
                       : "cursor-pointer hover:bg-neutral-100"
                   }`}
                 >
@@ -251,6 +269,11 @@ const CartItem = ({ item }) => {
 
           {/* Giá (Desktop) */}
           <div className="hidden md:block col-start-4 text-end mr-4">
+            {!isOutOfStock && item.stockQuantity !== undefined && (
+              <p className="text-xs text-neutral-700 font-semibold mb-1">
+                Còn lại: {item.stockQuantity}
+              </p>
+            )}
             <p className="text-lg font-bold text-neutral-800">
               {formatCurrency(Number(item.price) * item.quantity)}
             </p>

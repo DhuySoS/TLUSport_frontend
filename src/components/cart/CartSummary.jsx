@@ -2,10 +2,12 @@ import { formatCurrency } from "@/lib/formatCurrency";
 import React from "react";
 import CartVoucher from "./CartVoucher";
 import useCartStore from "@/store/useCartStore";
+import useAuthStore from "@/store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
 const CartSummary = () => {
   const { selectedItemIds, getSelectedTotal, getDiscount, getFinalTotal, appliedCoupon } = useCartStore();
+  const { isAuthenticated, setIsOpenLogin } = useAuthStore();
   const selectedTotal = getSelectedTotal();
   const discount = getDiscount();
   const finalTotal = getFinalTotal();
@@ -14,6 +16,10 @@ const CartSummary = () => {
 
   const handleCheckout = () => {
     if (selectedCount === 0) return;
+    if (!isAuthenticated) {
+      setIsOpenLogin(true);
+      return;
+    }
     navigate("/checkout");
   };
 

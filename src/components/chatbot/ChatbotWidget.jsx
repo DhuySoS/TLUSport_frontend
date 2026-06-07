@@ -26,6 +26,7 @@ const ChatbotWidget = () => {
         ];
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -43,6 +44,7 @@ const ChatbotWidget = () => {
     const userMessage = { sender: "user", text: inputText };
     setMessages((prev) => [...prev, userMessage]);
     setIsLoading(true);
+    setIsGenerating(true);
 
     // Tạo sẵn 1 tin nhắn trống của Bot để chuẩn bị điền nội dung vào
     setMessages((prev) => [...prev, { sender: "bot", text: "", products: [] }]);
@@ -126,9 +128,11 @@ const ChatbotWidget = () => {
           }
         }
       }
+      setIsGenerating(false);
     } catch (error) {
       console.error("Chat error:", error);
       setIsLoading(false);
+      setIsGenerating(false);
       setMessages((prev) => {
         const newMessages = [...prev];
         const lastMsg = newMessages[newMessages.length - 1];
@@ -179,7 +183,7 @@ const ChatbotWidget = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        <ChatInput onSend={handleSend} isLoading={isLoading} />
+        <ChatInput onSend={handleSend} isLoading={isLoading || isGenerating} />
       </div>
     </>
   );

@@ -35,15 +35,21 @@ const ChatInput = ({ onSend, isLoading }) => {
 
   return (
     <div className="p-4 bg-white border-t border-neutral-200 rounded-b-2xl">
-      <div className="flex items-end gap-2 bg-neutral-100 rounded-2xl px-4 py-2 border border-transparent focus-within:border-black transition-colors relative">
+      <div
+        className={`flex items-end gap-2 bg-neutral-100 rounded-2xl px-4 py-2 border border-transparent focus-within:border-black transition-colors relative ${isLoading ? "opacity-60 cursor-not-allowed" : ""}`}
+      >
         <textarea
           ref={textareaRef}
           rows={1}
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Bạn cần hỗ trợ gì..."
-          className="flex-1 bg-transparent border-none outline-none text-sm text-neutral-800 placeholder-neutral-500 resize-none py-1 pb-5 max-h-30 scrollbar-none leading-relaxed"
+          placeholder={
+            isLoading
+              ? "Để mình suy nghĩ xíu, bạn đợi chút nhoa..."
+              : "Bạn cần hỗ trợ gì..."
+          }
+          className={`flex-1 bg-transparent border-none outline-none text-sm text-neutral-800 placeholder-neutral-500 resize-none py-1 pb-5 max-h-30 scrollbar-none leading-relaxed ${isLoading ? "cursor-not-allowed" : ""}`}
           disabled={isLoading}
           maxLength={100}
           style={{ height: "auto" }}

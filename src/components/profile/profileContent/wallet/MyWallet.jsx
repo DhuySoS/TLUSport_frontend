@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import walletServices from "@/services/walletServices";
 import { formatCurrency } from "@/lib/formatCurrency";
-import { Wallet, History, ArrowDownCircle } from "lucide-react";
+import { Wallet, History, ArrowDownCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 const MyWallet = () => {
@@ -9,6 +9,7 @@ const MyWallet = () => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
+  const [isDepositing, setIsDepositing] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -21,6 +22,9 @@ const MyWallet = () => {
         walletServices.getMyWallet(),
         walletServices.getTransactions(),
       ]);
+      console.log("walletRes", walletRes);
+      console.log("transRes", transRes);
+
       setWallet(walletRes.data?.data);
       setTransactions(transRes.data?.data?.items || []);
     } catch (error) {
@@ -32,22 +36,29 @@ const MyWallet = () => {
   };
 
   const handleDeposit = async () => {
-    if (!depositAmount || isNaN(depositAmount) || Number(depositAmount) <= 0) {
+    if (isDepositing) return;
+
+    // Remove dots to parse the raw number
+    const cleanAmount = depositAmount.replace(/\./g, "");
+    if (!cleanAmount || isNaN(cleanAmount) || Number(cleanAmount) <= 0) {
       toast.error("Vui lòng nhập số tiền hợp lệ");
       return;
     }
 
+    setIsDepositing(true);
     try {
-      const res = await walletServices.depositVnpay(Number(depositAmount));
+      const res = await walletServices.depositVnpay(Number(cleanAmount));
       const paymentUrl = res.data?.data?.paymentUrl;
       if (paymentUrl) {
         window.location.href = paymentUrl;
       } else {
         toast.error("Không thể tạo giao dịch nạp tiền");
+        setIsDepositing(false);
       }
     } catch (error) {
       console.error("Lỗi khi tạo nạp tiền:", error);
       toast.error("Lỗi hệ thống khi tạo giao dịch");
+      setIsDepositing(false);
     }
   };
 
@@ -78,18 +89,34 @@ const MyWallet = () => {
           </h3>
           <div className="flex flex-col sm:flex-row gap-2">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
               placeholder="Nhập số tiền..."
               value={depositAmount}
-              onChange={(e) => setDepositAmount(e.target.value)}
+              onChange={(e) => {
+                const rawVal = e.target.value;
+                // Strip all non-digits to get raw value
+                const cleanVal = rawVal.replace(/\D/g, "");
+                if (cleanVal === "") {
+                  setDepositAmount("");
+                  return;
+                }
+                // Format with dots
+                setDepositAmount(Number(cleanVal).toLocaleString("vi-VN"));
+              }}
               className="px-4 py-2 bg-neutral-900 rounded-lg text-white w-full outline-none border border-neutral-700 focus:border-neutral-500 placeholder:text-neutral-400 text-sm transition-colors"
             />
             <button
               onClick={handleDeposit}
-              className="bg-white text-neutral-900 px-5 py-2 rounded-lg font-bold hover:bg-neutral-200 active:bg-neutral-300 transition-colors flex items-center justify-center gap-2 whitespace-nowrap text-sm"
+              disabled={isDepositing}
+              className="bg-white text-neutral-900 px-5 py-2 rounded-lg font-bold hover:bg-neutral-200 active:bg-neutral-300 transition-colors flex items-center justify-center gap-2 whitespace-nowrap text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <ArrowDownCircle size={18} />
-              Nạp ngay
+              {isDepositing ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <ArrowDownCircle size={18} />
+              )}
+              {isDepositing ? "Đang xử lý..." : "Nạp ngay"}
             </button>
           </div>
         </div>
@@ -119,14 +146,22 @@ const MyWallet = () => {
                   <p className="font-medium text-neutral-900">
                     {t.description || "Giao dịch"}
                   </p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="text-sm text-neutral-500 mt-1">
                     {new Date(t.createdAt).toLocaleString()}
                   </p>
                 </div>
                 <div
-                  className={`font-bold ${t.transactionType === "DEPOSIT" ? "text-green-600" : "text-red-500"}`}
+                  className={`font-bold shrink-0 ${
+                    t.status === "FAILED"
+                      ? "text-neutral-400 line-through"
+                      : t.status === "PENDING"
+                        ? "text-amber-500"
+                        : t.direction === "IN"
+                          ? "text-green-600"
+                          : "text-red-500"
+                  }`}
                 >
-                  {t.transactionType === "DEPOSIT" ? "+" : "-"}
+                  {t.status !== "FAILED" && (t.direction === "IN" ? "+" : "-")}
                   {formatCurrency(t.amount)}
                 </div>
               </div>

@@ -15,8 +15,8 @@ const SearchOverlay = ({ isOpen, onClose }) => {
     setQuery(tag);
     setTimeout(() => {
       inputRef.current.focus();
-    }, 0)
-  }
+    }, 0);
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -44,12 +44,15 @@ const SearchOverlay = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
-
   return (
     <div
       className={`fixed inset-0 z-200 bg-neutral-900/90 h-screen flex flex-col transition-transform duration-500 ease-in-out ${isOpen ? "translate-y-0" : "-translate-y-full"}`}
+      onClick={onClose}
     >
-      <div className="flex items-center px-4 md:px-16 py-4 md:py-6 bg-white">
+      <div
+        className="flex items-center px-4 md:px-16 py-4 md:py-6 bg-white"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="flex-1 max-w-2xl mx-auto flex items-center bg-neutral-300/50 rounded-full px-6 border border-transparent focus-within:border-neutral-600 transition-all">
           <input
             ref={inputRef}
@@ -82,11 +85,18 @@ const SearchOverlay = ({ isOpen, onClose }) => {
       </div>
 
       <div className=" flex-1 mt-2 ">
-        <div className="max-w-5xl mx-auto px-4 md:px-16 py-6 md:py-10 bg-white rounded-2xl">
+        <div
+          className="max-w-5xl mx-auto px-4 md:px-16 py-6 md:py-10 bg-white rounded-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
           {query.length === 0 ? (
             <ViewedAndTrending onSelectTag={handleSelectTag} />
           ) : (
-            <SearchResults onClose={onClose} query={debouncedQuery} onSelectTag={handleSelectTag} /> // Hiện khi đang gõ
+            <SearchResults
+              onClose={onClose}
+              query={debouncedQuery}
+              onSelectTag={handleSelectTag}
+            /> // Hiện khi đang gõ
           )}
         </div>
       </div>

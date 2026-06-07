@@ -120,22 +120,31 @@ const PaymentResultPage = () => {
                             </div>
                         )}
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Link
-                                to="/my-profile/order-history"
-                                className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-all shadow-sm"
-                            >
-                                {orderId ? (
-                                    <>
-                                        <span className="mr-2">#</span>
-                                        <span>Xem chi tiết đơn hàng </span>
-                                    </>
-                                ) : (
-                                    <span>Xem lịch sử đơn hàng</span>
-                                )}
-                            </Link>
+                            {new URLSearchParams(location.search).get("vnp_TxnRef")?.includes("WALLET") || message?.includes("ví") || message?.includes("Ví") ? (
+                                <a
+                                    href="/my-profile/wallet"
+                                    className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-all shadow-sm text-center"
+                                >
+                                    Quay lại Ví của tôi
+                                </a>
+                            ) : (
+                                <Link
+                                    to="/my-profile/order-history"
+                                    className="px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 font-medium transition-all shadow-sm text-center"
+                                >
+                                    {orderId ? (
+                                        <>
+                                            <span className="mr-2">#</span>
+                                            <span>Xem chi tiết đơn hàng </span>
+                                        </>
+                                    ) : (
+                                        <span>Xem lịch sử đơn hàng</span>
+                                    )}
+                                </Link>
+                            )}
                             <Link
                                 to="/"
-                                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all"
+                                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all text-center"
                             >
                                 Tiếp tục mua sắm
                             </Link>
@@ -148,12 +157,21 @@ const PaymentResultPage = () => {
                         <p className="text-gray-600 mb-8 text-lg">{message || "Đơn hàng của bạn chưa được xác nhận."}</p>
 
                         <div className="flex flex-col sm:flex-row justify-center gap-4">
-                            <Link
-                                to="/cart"
-                                className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all shadow-sm"
-                            >
-                                Quay lại giỏ hàng
-                            </Link>
+                            {new URLSearchParams(location.search).get("vnp_TxnRef")?.includes("WALLET") || message?.includes("ví") || message?.includes("Ví") ? (
+                                <a
+                                    href="/my-profile/wallet"
+                                    className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all shadow-sm text-center"
+                                >
+                                    Quay lại Ví của tôi
+                                </a>
+                            ) : (
+                                <Link
+                                    to="/cart"
+                                    className="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition-all shadow-sm text-center"
+                                >
+                                    Quay lại giỏ hàng
+                                </Link>
+                            )}
                             <Link
                                 to="/"
                                 className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-all"

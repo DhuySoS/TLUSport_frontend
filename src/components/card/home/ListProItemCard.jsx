@@ -201,21 +201,16 @@ const ListProItemCard = ({ productData }) => {
         )}
 
         {/* Nút yêu thích nổi góc trên phải */}
-        {/* {user && (
+        {user && (
           <div className="absolute top-2 right-2 z-20">
             <WishlistButton
-              product={{
-                id: productData?.id,
-                name: productData?.name,
-                price: productData?.basePrice || 0,
-                image: firstImage
-              }}
+              productId={productData?.id}
               size="sm"
               variant="icon"
               className="shadow-md"
             />
           </div>
-        )} */}
+        )}
         <div
           className={`opacity-0 group-hover:opacity-100 absolute bottom-2 left-2 bg-white/30 backdrop-blur-sm rounded-lg px-3 py-2 w-[calc(100%-1rem)] transition-all duration-300 translate-y-2 group-hover:translate-y-0 z-10 ${sizes.length === 0 ? "cursor-pointer min-h-15 flex items-center justify-center hover:bg-neutral-200" : ""}`}
           onClick={(e) => {

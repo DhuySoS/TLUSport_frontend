@@ -223,6 +223,9 @@ const OrderHistory = () => {
                     <span className="font-bold text-neutral-900 text-base flex items-center gap-2">
                       <Store size={18} /> TLUSport
                     </span>
+                    <span className="text-xs sm:text-sm font-bold text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded">
+                      # {String(order.orderId).padStart(6, "0")}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-3">

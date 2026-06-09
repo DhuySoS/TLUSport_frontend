@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import orderServices from "@/services/orderServices";
+import reviewServices from "@/services/reviewServices";
 import { formatCurrency } from "@/lib/formatCurrency";
 import { Link } from "react-router-dom";
-import { Store, Truck } from "lucide-react";
+import { Store, Truck, RefreshCw } from "lucide-react";
 import ReviewModal from "./ReviewModal";
 import ConfirmCancelModal from "./ConfirmCancelModal";
 import ReturnRequestModal from "./ReturnRequestModal";
@@ -19,6 +20,7 @@ const OrderHistory = () => {
   const [returningOrder, setReturningOrder] = useState(null);
   const [viewingReturnDetail, setViewingReturnDetail] = useState(null);
   const [returnDetailLoading, setReturnDetailLoading] = useState(false);
+  const [reviewedItemIds, setReviewedItemIds] = useState(new Set());
 
   const tabs = [
     { id: "ALL", label: "Tất cả" },
@@ -33,18 +35,29 @@ const OrderHistory = () => {
   const fetchOrders = async () => {
     setIsLoading(true);
     try {
-      // Truyền size lớn (ví dụ 1000) để lấy toàn bộ đơn hàng 1 lần
-      const res = await orderServices.getMyOrders(1, 1000);
-      console.log("orders", res);
+      const [orderRes, reviewRes] = await Promise.all([
+        orderServices.getMyOrders(1, 1000),
+        reviewServices.getMyReviews(1, 1000),
+      ]);
 
-      if (res && res.data) {
-        setOrders(res.data.items || []);
+      if (orderRes?.data) {
+        setOrders(orderRes.data.items || []);
       }
+
+      const reviewItems =
+        reviewRes?.data?.data?.items || reviewRes?.data?.items || [];
+      setReviewedItemIds(
+        new Set(reviewItems.map((r) => r.orderItemId).filter(Boolean)),
+      );
     } catch (error) {
       console.error("Lỗi khi tải lịch sử đơn hàng:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleReviewSuccess = (submittedItemIds) => {
+    setReviewedItemIds((prev) => new Set([...prev, ...submittedItemIds]));
   };
 
   useEffect(() => {
@@ -150,20 +163,24 @@ const OrderHistory = () => {
           )
         : orders.filter((order) => order.orderStatus === activeTab);
 
-  if (isLoading) {
-    return (
-      <div className="w-full text-center py-20 animate-pulse">
-        Đang tải lịch sử đơn hàng...
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 w-full pb-20">
       <div className="sticky top-0 z-20 bg-white pt-4 pb-2 space-y-6">
-        <p className="text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900">
-          Lịch sử đơn hàng
-        </p>
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900">
+            Lịch sử đơn hàng
+          </p>
+          <button
+            onClick={fetchOrders}
+            disabled={isLoading}
+            className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-neutral-600 border border-neutral-200 rounded-full hover:bg-neutral-50 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+          >
+            <RefreshCw
+              className={`size-3.5 ${isLoading ? "animate-spin" : ""}`}
+            />
+            Tải lại
+          </button>
+        </div>
         {/* Tabs */}
         <div className="flex overflow-x-auto border-b border-neutral-200 hide-scrollbar">
           {tabs.map((tab) => (
@@ -181,8 +198,11 @@ const OrderHistory = () => {
           ))}
         </div>
       </div>
-
-      {orders.length === 0 ? (
+      {isLoading ? (
+        <div className="w-full text-center py-20 animate-pulse">
+          Đang tải lịch sử đơn hàng...
+        </div>
+      ) : orders.length === 0 ? (
         <div className="w-full text-center py-10">
           <p className="text-lg font-medium text-neutral-500">
             Chưa có đơn hàng nào
@@ -335,22 +355,35 @@ const OrderHistory = () => {
                         </button>
                       )}
 
-                      {order.orderStatus === "DELIVERED" && (
-                        <>
-                          <button
-                            onClick={() => setReviewingOrder(order)}
-                            className="w-full sm:w-auto text-center justify-center px-6 py-2.5 bg-red-500 text-white text-sm font-bold rounded hover:bg-red-600 transition-colors cursor-pointer"
-                          >
-                            Đánh giá
-                          </button>
-                          <button
-                            onClick={() => setReturningOrder(order)}
-                            className="w-full sm:w-auto text-center justify-center px-5 py-2.5 border border-neutral-300 bg-white text-neutral-700 text-sm font-bold rounded hover:bg-neutral-50 transition-colors cursor-pointer"
-                          >
-                            Yêu Cầu Trả Hàng/Hoàn Tiền
-                          </button>
-                        </>
-                      )}
+                      {order.orderStatus === "DELIVERED" &&
+                        (() => {
+                          const isReviewed = order.items.every((item) =>
+                            reviewedItemIds.has(item.orderItemId),
+                          );
+                          return (
+                            <>
+                              <button
+                                disabled={isReviewed}
+                                onClick={() =>
+                                  !isReviewed && setReviewingOrder(order)
+                                }
+                                className={`w-full sm:w-auto text-center justify-center px-6 py-2.5 text-sm font-bold rounded transition-colors ${
+                                  isReviewed
+                                    ? "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+                                    : "bg-red-500 text-white hover:bg-red-600 cursor-pointer"
+                                }`}
+                              >
+                                {isReviewed ? "Đã đánh giá" : "Đánh giá"}
+                              </button>
+                              <button
+                                onClick={() => setReturningOrder(order)}
+                                className="w-full sm:w-auto text-center justify-center px-5 py-2.5 border border-neutral-300 bg-white text-neutral-700 text-sm font-bold rounded hover:bg-neutral-50 transition-colors cursor-pointer"
+                              >
+                                Yêu Cầu Trả Hàng/Hoàn Tiền
+                              </button>
+                            </>
+                          );
+                        })()}
 
                       {[
                         "RETURN_REQUESTED",
@@ -379,6 +412,7 @@ const OrderHistory = () => {
         isOpen={!!reviewingOrder}
         onClose={() => setReviewingOrder(null)}
         order={reviewingOrder}
+        onSuccess={handleReviewSuccess}
       />
 
       {/* Modal Xác nhận Hủy Đơn */}

@@ -1,21 +1,32 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import reviewServices from "@/services/reviewServices";
+import { getPaginationRange } from "@/lib/utils";
 import { Star } from "lucide-react";
 
 const ReviewList = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize] = useState(10);
+
+  const fetchReviews = async (pageNum) => {
+    setLoading(true);
+    try {
+      const res = await reviewServices.getMyReviews(pageNum, pageSize);
+      setReviews(res.data?.data?.items || []);
+      setTotalPages(res.data?.data?.totalPage || 1);
+    } catch (err) {
+      console.error("Lỗi khi tải danh sách đánh giá:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    reviewServices
-      .getMyReviews()
-      .then((res) => {
-        setReviews(res.data?.data?.items || []);
-      })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, []);
+    fetchReviews(page);
+  }, [page]);
 
   return (
     <div className="space-y-8 w-full">
@@ -117,6 +128,58 @@ const ReviewList = () => {
               </div>
             </div>
           ))}
+
+          {/* Phân trang */}
+          {totalPages > 1 && (
+            <div className="mt-8 flex justify-center items-center gap-2">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1 || loading}
+                className={`px-3 py-1.5 rounded-full border border-neutral-300 text-xs font-semibold hover:bg-neutral-50 transition-all duration-300 ${
+                  page === 1 || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                Trước
+              </button>
+
+              {getPaginationRange(page, totalPages).map((p, idx) => {
+                if (p === "...") {
+                  return (
+                    <span
+                      key={`dots-${idx}`}
+                      className="w-8 h-8 flex items-center justify-center text-neutral-400 select-none font-bold"
+                    >
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    disabled={loading}
+                    className={`w-8 h-8 rounded-full border text-xs font-semibold flex items-center justify-center transition-all duration-300 ${
+                      p === page
+                        ? "bg-neutral-800 text-white border-neutral-800"
+                        : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 cursor-pointer"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages || loading}
+                className={`px-3 py-1.5 rounded-full border border-neutral-300 text-xs font-semibold hover:bg-neutral-50 transition-all duration-300 ${
+                  page === totalPages || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                }`}
+              >
+                Sau
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>

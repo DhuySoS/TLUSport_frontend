@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import walletServices from "@/services/walletServices";
 import { formatCurrency } from "@/lib/formatCurrency";
+import { getPaginationRange } from "@/lib/utils";
 import { Wallet, History, ArrowDownCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -10,23 +11,34 @@ const MyWallet = () => {
   const [loading, setLoading] = useState(true);
   const [depositAmount, setDepositAmount] = useState("");
   const [isDepositing, setIsDepositing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize] = useState(10);
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    fetchData(page);
+  }, [page]);
 
-  const fetchData = async () => {
+  const fetchData = async (pageNum) => {
     try {
-      setLoading(true);
-      const [walletRes, transRes] = await Promise.all([
-        walletServices.getMyWallet(),
-        walletServices.getTransactions(),
-      ]);
-      console.log("walletRes", walletRes);
-      console.log("transRes", transRes);
+      if (pageNum === 1) {
+        setLoading(true);
+        const [walletRes, transRes] = await Promise.all([
+          walletServices.getMyWallet(),
+          walletServices.getTransactions(1, pageSize),
+        ]);
+        console.log("walletRes", walletRes);
+        console.log("transRes", transRes);
 
-      setWallet(walletRes.data?.data);
-      setTransactions(transRes.data?.data?.items || []);
+        setWallet(walletRes.data?.data);
+        setTransactions(transRes.data?.data?.items || []);
+        setTotalPages(transRes.data?.data?.totalPage || 1);
+      } else {
+        const transRes = await walletServices.getTransactions(pageNum, pageSize);
+        console.log("transRes", transRes);
+        setTransactions(transRes.data?.data?.items || []);
+        setTotalPages(transRes.data?.data?.totalPage || 1);
+      }
     } catch (error) {
       console.error("Lỗi khi tải thông tin ví:", error);
       toast.error("Không thể tải thông tin ví");
@@ -136,37 +148,90 @@ const MyWallet = () => {
             Chưa có giao dịch nào
           </div>
         ) : (
-          <div className="divide-y divide-neutral-100">
-            {transactions.map((t, i) => (
-              <div
-                key={i}
-                className="p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
-              >
-                <div>
-                  <p className="font-medium text-neutral-900">
-                    {t.description || "Giao dịch"}
-                  </p>
-                  <p className="text-sm text-neutral-500 mt-1">
-                    {new Date(t.createdAt).toLocaleString()}
-                  </p>
-                </div>
+          <>
+            <div className="divide-y divide-neutral-100">
+              {transactions.map((t, i) => (
                 <div
-                  className={`font-bold shrink-0 ${
-                    t.status === "FAILED"
-                      ? "text-neutral-400 line-through"
-                      : t.status === "PENDING"
-                        ? "text-amber-500"
-                        : t.direction === "IN"
-                          ? "text-green-600"
-                          : "text-red-500"
+                  key={i}
+                  className="p-4 flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                >
+                  <div>
+                    <p className="font-medium text-neutral-900">
+                      {t.description || "Giao dịch"}
+                    </p>
+                    <p className="text-sm text-neutral-500 mt-1">
+                      {new Date(t.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <div
+                    className={`font-bold shrink-0 ${
+                      t.status === "FAILED"
+                        ? "text-neutral-400 line-through"
+                        : t.status === "PENDING"
+                          ? "text-amber-500"
+                          : t.direction === "IN"
+                            ? "text-green-600"
+                            : "text-red-500"
+                    }`}
+                  >
+                    {t.status !== "FAILED" && (t.direction === "IN" ? "+" : "-")}
+                    {formatCurrency(t.amount)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Phân trang */}
+            {totalPages > 1 && (
+              <div className="p-4 border-t border-neutral-200 flex justify-center items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className={`px-3 py-1.5 rounded-full border border-neutral-300 text-xs font-semibold hover:bg-neutral-50 transition-all duration-300 ${
+                    page === 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {t.status !== "FAILED" && (t.direction === "IN" ? "+" : "-")}
-                  {formatCurrency(t.amount)}
-                </div>
+                  Trước
+                </button>
+
+                {getPaginationRange(page, totalPages).map((p, idx) => {
+                  if (p === "...") {
+                    return (
+                      <span
+                        key={`dots-${idx}`}
+                        className="w-8 h-8 flex items-center justify-center text-neutral-400 select-none font-bold"
+                      >
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`w-8 h-8 rounded-full border text-xs font-semibold flex items-center justify-center transition-all duration-300 ${
+                        p === page
+                          ? "bg-neutral-800 text-white border-neutral-800"
+                          : "border-neutral-300 text-neutral-700 hover:bg-neutral-50 cursor-pointer"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className={`px-3 py-1.5 rounded-full border border-neutral-300 text-xs font-semibold hover:bg-neutral-50 transition-all duration-300 ${
+                    page === totalPages ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  Sau
+                </button>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

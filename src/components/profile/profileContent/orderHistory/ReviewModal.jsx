@@ -3,7 +3,7 @@ import { Star, Camera, Video, HelpCircle } from "lucide-react";
 import reviewServices from "@/services/reviewServices";
 import { toast } from "sonner";
 
-const ReviewModal = ({ isOpen, onClose, order }) => {
+const ReviewModal = ({ isOpen, onClose, order, onSuccess }) => {
   if (!isOpen || !order) return null;
 
   const [reviews, setReviews] = useState({});
@@ -71,6 +71,10 @@ const ReviewModal = ({ isOpen, onClose, order }) => {
       toast.success("Đã gửi đánh giá thành công!", {
         position: "top-right",
       });
+      if (onSuccess) {
+        const submittedIds = Object.values(reviews).map((r) => r.orderItemId);
+        onSuccess(submittedIds);
+      }
       onClose();
     } catch (error) {
       console.error("Lỗi khi gửi đánh giá:", error);

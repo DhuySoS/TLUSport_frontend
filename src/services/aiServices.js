@@ -37,6 +37,27 @@ const aiServices = {
       throw error;
     }
   },
+  smartSearch: async (query, categoryId = null, topK = 4) => {
+    try {
+      const res = await fetch(`${baseURL}/ai/search`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query,
+          category_id: categoryId,
+          top_k: topK,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error("Lỗi kết nối AI Server");
+      }
+      return await res.json();
+    } catch (error) {
+      throw error;
+    }
+  },
 };
 
 export default aiServices;

@@ -1,4 +1,5 @@
 import productServices from "@/services/productServices";
+import aiServices from "@/services/aiServices";
 import { create } from "zustand";
 
 const useProductStore = create((set, get) => ({
@@ -57,6 +58,44 @@ const useProductStore = create((set, get) => ({
       set({
         error: error.response?.data?.message || "Lỗi khi tìm kiếm sản phẩm",
         isSearching: false,
+      });
+    }
+  },
+
+  searchProductsWithAI: async (keyword = "", pageNumber = 1, pageSize = 4) => {
+    set({ isSearching: true, error: null });
+    try {
+      const aiRes = await aiServices.smartSearch(keyword, null, pageSize);
+      const productIds = aiRes.product_ids || [];
+
+      if (productIds.length === 0) {
+        set({ searchResults: [], isSearching: false });
+        return;
+      }
+
+      const details = await Promise.all(
+        productIds.map(async (id) => {
+          try {
+            const detailRes = await productServices.getProductDetail(id);
+            return detailRes.data;
+          } catch (err) {
+            console.error(`Failed to fetch detail for product ${id}:`, err);
+            return null;
+          }
+        })
+      );
+
+      const validProducts = details.filter((p) => p !== null);
+      set({
+        searchResults: validProducts,
+        isSearching: false,
+      });
+    } catch (error) {
+      console.error("Lỗi searchProductsWithAI:", error);
+      set({
+        error: error.message || "Lỗi khi tìm kiếm sản phẩm bằng AI",
+        isSearching: false,
+        searchResults: [],
       });
     }
   },

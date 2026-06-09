@@ -8,7 +8,7 @@ const SearchOverlay = ({ isOpen, onClose }) => {
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const inputRef = useRef(null);
 
-  const searchProducts = useProductStore((state) => state.searchProducts);
+  const searchProductsWithAI = useProductStore((state) => state.searchProductsWithAI);
   const isSearching = useProductStore((state) => state.isSearching);
 
   const handleSelectTag = (tag) => {
@@ -27,9 +27,9 @@ const SearchOverlay = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (debouncedQuery.trim().length > 0) {
-      searchProducts(debouncedQuery, 1, 4);
+      searchProductsWithAI(debouncedQuery, null, 4);
     }
-  }, [debouncedQuery, searchProducts]);
+  }, [debouncedQuery, searchProductsWithAI]);
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";

@@ -19,11 +19,16 @@ const CartVoucher = () => {
         </button>
       </div>
       <div className="flex items-center gap-4 overflow-x-auto w-full pb-3">
-        {coupons?.filter((coupon) => coupon.isActive === true).map((coupon) => (
-          <div key={coupon.id} className="w-1/2 shrink-0 h-30">
-            <VoucherCard couponData={coupon} />
-          </div>
-        ))}
+        {coupons
+          ?.filter((coupon) => {
+            const isExpired = coupon.endDate ? new Date(coupon.endDate) < new Date() : false;
+            return coupon.isActive === true && !isExpired;
+          })
+          .map((coupon) => (
+            <div key={coupon.id} className="w-1/2 shrink-0 h-30">
+              <VoucherCard couponData={coupon} />
+            </div>
+          ))}
 
       </div>
     </div>

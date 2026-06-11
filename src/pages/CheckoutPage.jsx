@@ -111,6 +111,8 @@ const CheckoutPage = () => {
       if (res && res.data) {
         if (res.data.paymentUrl) {
           window.location.href = res.data.paymentUrl;
+          // Giữ trạng thái loading (isConfirming = true) để tránh người dùng nhấn lại trong khi trình duyệt đang chuyển hướng
+          return;
         } else {
           toast.success("Đặt hàng thành công!", {
             duration: 5000,
@@ -122,10 +124,10 @@ const CheckoutPage = () => {
           navigate("/");
         }
       }
+      setIsConfirming(false);
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Có lỗi xảy ra khi đặt hàng");
-    } finally {
       setIsConfirming(false);
     }
   };

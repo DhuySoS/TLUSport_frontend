@@ -2,8 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import useProductStore from "@/store/useProductStore";
 
 const SearchBar = () => {
-  const { fetchProducts, searchProducts, searchKeyword, setSearchKeyword, pagination, isLoading } =
-    useProductStore();
+  const {
+    fetchProducts,
+    searchProducts,
+    searchKeyword,
+    setSearchKeyword,
+    pagination,
+    isLoading,
+  } = useProductStore();
 
   const [inputValue, setInputValue] = useState(searchKeyword || "");
   const debounceRef = useRef(null);
@@ -43,7 +49,7 @@ const SearchBar = () => {
       <div
         className="relative flex items-center"
         style={{
-          background: "linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)",
+          background: "#f8fafc",
           borderRadius: "16px",
           border: "2px solid",
           borderColor: hasKeyword ? "#3b82f6" : "#e2e8f0",
@@ -56,7 +62,10 @@ const SearchBar = () => {
         {/* Search Icon */}
         <span
           className="flex items-center justify-center pl-4"
-          style={{ color: hasKeyword ? "#3b82f6" : "#94a3b8", transition: "color 0.25s" }}
+          style={{
+            color: hasKeyword ? "#3b82f6" : "#94a3b8",
+            transition: "color 0.25s",
+          }}
         >
           {isLoading ? (
             // Loading spinner
@@ -109,15 +118,13 @@ const SearchBar = () => {
           className="flex-1 bg-transparent border-none outline-none px-3 py-3.5 text-[15px] font-medium text-slate-800 tracking-tight"
         />
 
-
-
         {/* Clear button */}
         {hasKeyword && (
           <button
             onClick={handleClear}
             type="button"
             title="Xóa tìm kiếm"
-            className="flex items-center justify-center mr-2.5 w-[30px] h-[30px] rounded-full bg-slate-200 border-none cursor-pointer text-slate-500 transition-colors duration-200 shrink-0"
+            className="flex items-center justify-center mr-2.5 w-7.5 h-7.5 rounded-full bg-slate-200 border-none cursor-pointer text-slate-500 transition-colors duration-200 shrink-0"
             onMouseEnter={(e) => {
               e.currentTarget.style.background = "#fee2e2";
               e.currentTarget.style.color = "#ef4444";
@@ -147,18 +154,14 @@ const SearchBar = () => {
 
       {/* Search hint */}
       {hasKeyword && !isLoading && (
-        <p
-          className="mt-2 text-[13px] text-slate-400 pl-1"
-        >
+        <p className="mt-2 text-[13px] text-slate-400 pl-1">
           Kết quả cho{" "}
           <span style={{ color: "#3b82f6", fontWeight: 700 }}>
             &ldquo;{inputValue.trim()}&rdquo;
-          </span>
-          {" "}— {/* Result count badge */}
+          </span>{" "}
+          — {/* Result count badge */}
           {hasKeyword && !isLoading && (
-            <kbd
-              className="rounded-xl text-sm "
-            >
+            <kbd className="rounded-xl text-sm ">
               {pagination.totalElements ?? 0} kết quả
             </kbd>
           )}

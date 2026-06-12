@@ -1,54 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ListProItemCard from "@/components/card/home/ListProItemCard";
 import productServices from "@/services/productServices";
 import aiServices from "@/services/aiServices";
 import { shuffleArray } from "@/lib/shuffleArray";
 import useAuthStore from "@/store/useAuthStore";
-
-const getPaginationRange = (current, total) => {
-  const range = [];
-  const siblingCount = 1;
-
-  if (total <= 5) {
-    for (let i = 1; i <= total; i++) {
-      range.push(i);
-    }
-    return range;
-  }
-
-  const leftSiblingIndex = Math.max(current - siblingCount, 1);
-  const rightSiblingIndex = Math.min(current + siblingCount, total);
-
-  const shouldShowLeftDots = leftSiblingIndex > 2;
-  const shouldShowRightDots = rightSiblingIndex < total - 1;
-
-  if (!shouldShowLeftDots && shouldShowRightDots) {
-    const leftItemCount = 3 + 2 * siblingCount;
-    const leftRange = [];
-    for (let i = 1; i <= leftItemCount; i++) {
-      leftRange.push(i);
-    }
-    return [...leftRange, "...", total];
-  }
-
-  if (shouldShowLeftDots && !shouldShowRightDots) {
-    const rightItemCount = 3 + 2 * siblingCount;
-    const rightRange = [];
-    for (let i = total - rightItemCount + 1; i <= total; i++) {
-      rightRange.push(i);
-    }
-    return [1, "...", ...rightRange];
-  }
-
-  if (shouldShowLeftDots && shouldShowRightDots) {
-    const middleRange = [];
-    for (let i = leftSiblingIndex; i <= rightSiblingIndex; i++) {
-      middleRange.push(i);
-    }
-    return [1, "...", ...middleRange, "...", total];
-  }
-  return range;
-};
+import { getPaginationRange } from "@/lib/utils";
 
 const AiRecommendations = () => {
   const [products, setProducts] = useState([]);
@@ -56,6 +12,8 @@ const AiRecommendations = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(false);
   const { user, isLoading: authLoading } = useAuthStore();
+  const titleRef = useRef(null);
+  const isMounted = useRef(false);
 
   const fetchProducts = async (pageNumber) => {
     if (authLoading) return;
@@ -78,24 +36,20 @@ const AiRecommendations = () => {
               }
             }),
           );
-          const validProducts = productDetails.filter(Boolean);
+          const validProducts = productDetails.filter(
+            (p) => p && p.isActive === true,
+          );
           setProducts(shuffleArray(validProducts));
           setTotalPages(1); // Gợi ý AI không phân trang
-        } else {
-          // Fallback nếu không có gợi ý từ AI
-          const res = await productServices.getAllProducts(pageNumber, 8);
-          if (res?.data?.items) {
-            setProducts(shuffleArray(res.data.items));
-            setTotalPages(res.data.totalPage || 1);
-          }
+          return;
         }
-      } else {
-        // Khách chưa đăng nhập: Hiển thị sản phẩm mặc định
-        const res = await productServices.getAllProducts(pageNumber, 8);
-        if (res?.data?.items) {
-          setProducts(shuffleArray(res.data.items));
-          setTotalPages(res.data.totalPage || 1);
-        }
+      }
+
+      // Khách chưa đăng nhập hoặc Fallback nếu không có gợi ý từ AI
+      const res = await productServices.getAllProducts(pageNumber, 8);
+      if (res?.data?.items) {
+        setProducts(shuffleArray(res.data.items));
+        setTotalPages(res.data.totalPage || 1);
       }
     } catch (error) {
       console.error("Lỗi khi tải AI recommendations:", error);
@@ -113,6 +67,22 @@ const AiRecommendations = () => {
       fetchProducts(page);
     }
   }, [page, authLoading, user]);
+
+  useEffect(() => {
+    if (isMounted.current) {
+      if (!loading) {
+        const element = titleRef.current;
+        if (element) {
+          const yOffset = -100; // Trừ hao khoảng 100px để không bị header sticky che mất tiêu đề
+          const y =
+            element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }
+    } else {
+      isMounted.current = true;
+    }
+  }, [loading]);
 
   return (
     <div className="space-y-15 mb-20">
@@ -132,7 +102,7 @@ const AiRecommendations = () => {
         </div>
       </div> */}
       <div className="px-15">
-        <div className="flex justify-between items-center mb-8">
+        <div ref={titleRef} className="flex justify-between items-center mb-8">
           <h2 className="text-4xl font-medium text-neutral-800 ">
             Gợi ý cho bạn
           </h2>
@@ -167,7 +137,9 @@ const AiRecommendations = () => {
               onClick={() => setPage((p) => Math.max(1, p - 1))}
               disabled={page === 1 || loading}
               className={`px-4 py-2 rounded-full border border-neutral-300 text-sm font-medium hover:bg-neutral-100 transition-all duration-300 ${
-                page === 1 || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                page === 1 || loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
               }`}
             >
               Trước
@@ -204,7 +176,9 @@ const AiRecommendations = () => {
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
               disabled={page === totalPages || loading}
               className={`px-4 py-2 rounded-full border border-neutral-300 text-sm font-medium hover:bg-neutral-100 transition-all duration-300 ${
-                page === totalPages || loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                page === totalPages || loading
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
               }`}
             >
               Sau

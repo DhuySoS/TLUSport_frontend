@@ -18,8 +18,9 @@ const useProductStore = create((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const res = await productServices.getAllProducts(pageNumber, pageSize);
+      const activeProducts = res.data?.items || [];
       set({
-        products: res.data?.items,
+        products: activeProducts,
         pagination: {
           currentPage: res.data?.currentPage,
           pageSize: res.data?.pageSize,
@@ -82,7 +83,7 @@ const useProductStore = create((set, get) => ({
             console.error(`Failed to fetch detail for product ${id}:`, err);
             return null;
           }
-        })
+        }),
       );
 
       const validProducts = details.filter((p) => p !== null);

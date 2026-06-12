@@ -3,7 +3,7 @@ import axiosInstance from "./axiosInstance";
 const productServices = {
   getAllProducts: async (pageNumber = 1, pageSize = 10) => {
     try {
-      const res = await axiosInstance.get("/products", {
+      const res = await axiosInstance.get("/products/active", {
         params: {
           pageNumber,
           pageSize,

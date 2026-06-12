@@ -98,6 +98,7 @@ const useCartStore = create(
       toast.error(msg, {
         position: "top-right",
       });
+      throw error;
     }
   },
 

@@ -52,6 +52,10 @@ const CartItem = ({ item }) => {
           closeConfirm();
           await removeItem(item.id);
         },
+        onCancel: () => {
+          closeConfirm();
+          setQuantity(item.quantity);
+        },
       });
       return;
     }
@@ -61,8 +65,14 @@ const CartItem = ({ item }) => {
   };
 
   const handleInputChange = (e) => {
-    const val = parseInt(e.target.value, 10);
-    if (!isNaN(val)) {
+    const value = e.target.value;
+    if (value === "") {
+      setQuantity("");
+      return;
+    }
+    // Chỉ cho phép nhập số nguyên dương (không cho phép ký tự âm - hay chữ cái)
+    if (/^\d+$/.test(value)) {
+      const val = parseInt(value, 10);
       if (item.stockQuantity !== undefined && val > item.stockQuantity) {
         setQuantity(item.stockQuantity);
       } else {
@@ -72,7 +82,11 @@ const CartItem = ({ item }) => {
   };
 
   const handleInputBlur = () => {
-    handleQuantityChange(quantity);
+    if (quantity === "" || isNaN(parseInt(quantity, 10))) {
+      setQuantity(item.quantity);
+    } else {
+      handleQuantityChange(parseInt(quantity, 10));
+    }
   };
 
   const handleRemoveClick = () => {
@@ -95,7 +109,7 @@ const CartItem = ({ item }) => {
           description={confirmConfig.description}
           confirmLabel={confirmConfig.confirmLabel}
           onConfirm={confirmConfig.onConfirm}
-          onCancel={closeConfirm}
+          onCancel={confirmConfig.onCancel || closeConfirm}
         />
       )}
 
@@ -210,7 +224,7 @@ const CartItem = ({ item }) => {
                 className={`flex items-center text-xs md:text-sm border rounded-full w-fit px-1 py-0.5 ${isOutOfStock ? "bg-neutral-100 text-neutral-400" : "bg-white"}`}
               >
                 <button
-                  onClick={() => handleQuantityChange(quantity - 1)}
+                  onClick={() => handleQuantityChange((Number(quantity) || item.quantity) - 1)}
                   disabled={isUpdating || isOutOfStock}
                   className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
                     isOutOfStock
@@ -229,14 +243,14 @@ const CartItem = ({ item }) => {
                   disabled={isOutOfStock}
                 />
                 <button
-                  onClick={() => handleQuantityChange(quantity + 1)}
+                  onClick={() => handleQuantityChange((Number(quantity) || item.quantity) + 1)}
                   disabled={
                     isUpdating ||
                     isOutOfStock ||
-                    quantity >= (item.stockQuantity ?? 0)
+                    (Number(quantity) || item.quantity) >= (item.stockQuantity ?? 0)
                   }
                   className={`w-5 h-5 md:w-6 md:h-6 flex items-center justify-center rounded-full transition-colors ${
-                    isOutOfStock || quantity >= (item.stockQuantity ?? 0)
+                    isOutOfStock || (Number(quantity) || item.quantity) >= (item.stockQuantity ?? 0)
                       ? "cursor-not-allowed text-neutral-400"
                       : "cursor-pointer hover:bg-neutral-100"
                   }`}
